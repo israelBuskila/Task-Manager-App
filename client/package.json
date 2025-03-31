@@ -1,0 +1,41 @@
+{
+  "name": "client",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@mantine/core": "^7.17.3",
+    "@mantine/dates": "^7.17.3",
+    "@mantine/form": "^7.17.3",
+    "@mantine/hooks": "^7.17.3",
+    "@mantine/notifications": "^7.17.3",
+    "@tabler/icons-react": "^3.31.0",
+    "@types/axios": "^0.9.36",
+    "axios": "^1.8.4",
+    "cookies-next": "^5.1.0",
+    "dayjs": "^1.11.13",
+    "jose": "^6.0.10",
+    "jotai": "^2.12.2",
+    "next": "15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "postcss": "^8.5.3",
+    "postcss-preset-mantine": "^1.17.0",
+    "postcss-simple-vars": "^7.0.1",
+    "typescript": "^5"
+  }
+}
