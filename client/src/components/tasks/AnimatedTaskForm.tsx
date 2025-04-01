@@ -3,14 +3,48 @@ import { TextInput, Textarea, Select, Button, Group, Stack } from '@mantine/core
 import { DateInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { Task, CreateTaskInput, UpdateTaskInput } from '@/types';
+import { useAtom } from 'jotai';
+import { userAtom } from '@/store/auth';
+import { useState, useEffect } from 'react';
+import { adminApi } from '@/lib/api/admin.api';
 
 interface AnimatedTaskFormProps {
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => void;
   onCancel: () => void;
   initialData?: Task;
+  adminView?: boolean;
 }
 
-export function AnimatedTaskForm({ onSubmit, onCancel, initialData }: AnimatedTaskFormProps) {
+export function AnimatedTaskForm({ onSubmit, onCancel, initialData, adminView = false }: AnimatedTaskFormProps) {
+  const [currentUser] = useAtom(userAtom);
+  const [users, setUsers] = useState<{ value: string; label: string }[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  // Fetch users if in admin mode
+  useEffect(() => {
+    if (!adminView) return;
+    
+    const fetchUsers = async () => {
+      setIsLoadingUsers(true);
+      try {
+        const response = await adminApi.getUsersWithTaskCount();
+        if (response.success && response.data) {
+          const formattedUsers = response.data.map(user => ({
+            value: user._id,
+            label: `${user.firstName} ${user.lastName}`
+          }));
+          setUsers(formattedUsers);
+        }
+      } catch (error) {
+        console.error('Error fetching users for assignment:', error);
+      } finally {
+        setIsLoadingUsers(false);
+      }
+    };
+    
+    fetchUsers();
+  }, [adminView]);
+
   const form = useForm<CreateTaskInput | UpdateTaskInput>({
     initialValues: {
       title: initialData?.title || '',
@@ -19,10 +53,8 @@ export function AnimatedTaskForm({ onSubmit, onCancel, initialData }: AnimatedTa
       priority: initialData?.priority || 'MEDIUM',
       dueDate: initialData?.dueDate ? new Date(initialData.dueDate) : new Date(),
       reminderDate: initialData?.reminderDate ? new Date(initialData.reminderDate) : new Date(),
-      ...(initialData?.id && {
-        id: initialData.id,
-        assignedTo: initialData.assignedTo || initialData.assignedUser?._id
-      })
+      assignedTo: initialData?.assignedTo || initialData?.assignedUser?._id || (adminView ? '' : currentUser?.id),
+      ...(initialData?.id && { id: initialData.id })
     },
   });
 
@@ -127,6 +159,21 @@ export function AnimatedTaskForm({ onSubmit, onCancel, initialData }: AnimatedTa
               {...form.getInputProps('description')}
             />
           </motion.div>
+
+          {adminView && (
+            <motion.div variants={itemAnimation}>
+              <Select
+                label="Assign To"
+                placeholder={isLoadingUsers ? "Loading users..." : "Select user to assign"}
+                data={users}
+                searchable
+                clearable={false}
+                required
+                disabled={isLoadingUsers}
+                {...form.getInputProps('assignedTo')}
+              />
+            </motion.div>
+          )}
 
           <Group grow>
             <motion.div variants={itemAnimation}>

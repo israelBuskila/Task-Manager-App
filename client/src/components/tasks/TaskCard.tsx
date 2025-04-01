@@ -33,8 +33,30 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = fa
   const [currentUser] = useAtom(userAtom);
   const isAdmin = currentUser?.role === 'admin';
   
-  // Get task ID from either id or _id fild
+  // Get task ID from either id or _id field
   const taskId = task.id || task._id;
+
+  // Helper function to format user name
+  const formatUserName = (user: any) => {
+    if (!user) return 'Unassigned';
+    if (typeof user === 'string') return 'Loading...';
+    return user.firstName && user.lastName 
+      ? `${user.firstName} ${user.lastName}`
+      : user.email || 'Unknown User';
+  };
+
+  // Get the assigned user info from either assignedUser or assignedTo (populated)
+  const assignedUserInfo = task.assignedUser || (typeof task.assignedTo === 'object' ? task.assignedTo : null);
+  const createdByUser = task.user && typeof task.user === 'object' ? task.user : null;
+
+  // Debug log
+  console.log('Task data:', {
+    id: taskId,
+    assignedUser: task.assignedUser,
+    assignedTo: task.assignedTo,
+    assignedUserInfo,
+    showUser
+  });
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -58,7 +80,7 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = fa
             <Menu.Item
               leftSection={<IconTrash size={14} />}
               color="red"
-              onClick={() => onDelete(taskId || '')}
+              onClick={() => taskId && onDelete(taskId)}
             >
               Delete
             </Menu.Item>
@@ -77,15 +99,17 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = fa
         <Badge color={priorityColors[task.priority]}>
           {task.priority}
         </Badge>
-        {isAdmin && showUser && task.user && (
-          <Badge color="blue">
-            Created by: {`${task.user.firstName} ${task.user.lastName}`}
-          </Badge>
-        )}
-        {isAdmin && showUser && task.assignedUser && (
-          <Badge color="indigo">
-            Assigned to: {`${task.assignedUser.firstName} ${task.assignedUser.lastName}`}
-          </Badge>
+        {showUser && (
+          <>
+            {createdByUser && (
+              <Badge color="blue">
+                Created by: {formatUserName(createdByUser)}
+              </Badge>
+            )}
+            <Badge color="indigo">
+              Assigned to: {formatUserName(assignedUserInfo)}
+            </Badge>
+          </>
         )}
       </Group>
 

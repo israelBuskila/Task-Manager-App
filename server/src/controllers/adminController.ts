@@ -3,6 +3,13 @@ import User from '../models/User';
 import Task from '../models/Task';
 import { mapClientToServerStatus, mapServerToClientStatus } from '../controllers/taskController';
 
+interface PopulatedUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
 // @desc    Get all users
 // @route   GET /api/admin/users
 // @access  Private/Admin
@@ -127,14 +134,19 @@ export const getAllTasks = async (req: Request, res: Response) => {
     // Get all tasks with user data
     const tasks = await Task.find(filterQuery)
       .populate('user', 'firstName lastName email')
+      .populate('assignedTo', 'firstName lastName email')
       .sort({ createdAt: -1 });
     
     // Map server status to client status for response
     const clientTasks = tasks.map(task => {
       const taskObj = task.toObject();
+      const populatedAssignedTo = typeof taskObj.assignedTo === 'object' ? taskObj.assignedTo as PopulatedUser : null;
+      
       return {
         ...taskObj,
-        status: mapServerToClientStatus(taskObj.status)
+        status: mapServerToClientStatus(taskObj.status),
+        assignedUser: populatedAssignedTo,
+        assignedTo: populatedAssignedTo ? populatedAssignedTo._id : taskObj.assignedTo
       };
     });
     

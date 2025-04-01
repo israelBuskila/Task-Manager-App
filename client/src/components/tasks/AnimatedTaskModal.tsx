@@ -8,9 +8,10 @@ interface AnimatedTaskModalProps {
   onClose: () => void;
   onSubmit: (data: CreateTaskInput | UpdateTaskInput) => void;
   initialData?: Task;
+  adminView?: boolean;
 }
 
-export function AnimatedTaskModal({ opened, onClose, onSubmit, initialData }: AnimatedTaskModalProps) {
+export function AnimatedTaskModal({ opened, onClose, onSubmit, initialData, adminView = false }: AnimatedTaskModalProps) {
   const modalAnimation = {
     hidden: {
       opacity: 0,
@@ -66,6 +67,7 @@ export function AnimatedTaskModal({ opened, onClose, onSubmit, initialData }: An
             }}
             onCancel={onClose}
             initialData={initialData}
+            adminView={adminView}
           />
         </motion.div>
       </AnimatePresence>

@@ -1,6 +1,7 @@
 import { atom } from 'jotai';
 import { Task, TaskFilters, CreateTaskInput, UpdateTaskInput } from '@/types';
 import { api, TASK_ENDPOINTS } from '@/lib/api/index.api';
+import { adminApi } from '@/lib/api/admin.api';
 import { userAtom } from './auth';
 
 // Tasks state
@@ -34,22 +35,35 @@ export const fetchTasksAtom = atom(
       set(errorAtom, null);
       
       try {
-        // For regular users, only fetch their assigned tasks
-        const endpoint = user.role === 'admin' 
-          ? TASK_ENDPOINTS.GET_ALL
-          : `${TASK_ENDPOINTS.GET_ALL}?assignedTo=${user.id}`;
+        let tasks: Task[];
         
-        const response = await api.get<Task[]>(endpoint);
-        
-        if (!response.data) {
-          throw new Error('No data received from server');
+        // Use adminApi for admin users, regular endpoint for others
+        if (user.role === 'admin') {
+          console.log('Fetching tasks as admin...');
+          const filters = get(taskFiltersAtom);
+          tasks = await adminApi.getAllTasks(filters);
+          console.log(`Successfully fetched ${tasks.length} tasks as admin`);
+        } else {
+          // For regular users, only fetch their assigned tasks
+          console.log('Fetching tasks as regular user...');
+          const endpoint = `${TASK_ENDPOINTS.GET_ALL}?assignedTo=${user.id}`;
+          const response = await api.get<Task[]>(endpoint);
+          
+          if (!response.data || !Array.isArray(response.data)) {
+            throw new Error('Invalid response format from tasks API');
+          }
+          
+          tasks = response.data;
+          console.log(`Successfully fetched ${tasks.length} tasks as user`);
         }
         
-        set(tasksAtom, response.data);
-        return response.data;
+        set(tasksAtom, tasks);
+        return tasks;
       } catch (error: any) {
-        if (error.name === 'AbortError') {
-          throw new Error('Request timed out. Please try again later.');
+        console.error('Error in task fetch:', error);
+        if (error.response) {
+          console.error('Response error:', error.response.data);
+          throw new Error(error.response.data?.message || error.response.data || error.message);
         }
         throw error;
       }

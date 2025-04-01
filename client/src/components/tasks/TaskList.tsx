@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Container, Title, Stack, Button, Group, Text, Badge, Loader, Center, Alert } from '@mantine/core';
+import { Container, Title, Stack, Button, Group, Text, Badge, Loader, Center, Alert, SimpleGrid } from '@mantine/core';
 import { TaskCard } from './TaskCard';
 import { TaskFilters } from './TaskFilters';
 import { AnimatedTaskModal } from './AnimatedTaskModal';
@@ -15,9 +15,15 @@ import { checkReminders } from '@/lib/notification/utils';
 
 interface TaskListProps {
   adminView?: boolean;
+  showFilters?: boolean;
+  showAddTask?: boolean;
 }
 
-export function TaskList({ adminView = false }: TaskListProps) {
+export function TaskList({ 
+  adminView = false,
+  showFilters = true,
+  showAddTask = true 
+}: TaskListProps) {
   // Global state from Jotai
   const [tasks] = useAtom(tasksAtom);
   const [filteredTasks] = useAtom(filteredTasksAtom);
@@ -252,16 +258,18 @@ export function TaskList({ adminView = false }: TaskListProps) {
         
         <Stack gap="md">
           {filteredTasks.length > 0 ? (
-            filteredTasks.map(task => (
-              <TaskCard
-                key={task.id || task._id}
-                task={task}
-                onEdit={handleTaskEdit}
-                onStatusChange={handleStatusChange}
-                onDelete={handleTaskDelete}
-                showUser={adminView}
-              />
-            ))
+            <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="lg">
+              {filteredTasks.map((task) => (
+                <TaskCard
+                  key={task.id || task._id}
+                  task={task}
+                  onEdit={handleTaskEdit}
+                  onDelete={handleTaskDelete}
+                  onStatusChange={handleStatusChange}
+                  showUser={adminView}
+                />
+              ))}
+            </SimpleGrid>
           ) : (
             <Text c="dimmed" ta="center" py="xl">No tasks found matching your filters</Text>
           )}
@@ -275,6 +283,7 @@ export function TaskList({ adminView = false }: TaskListProps) {
           }}
           onSubmit={handleTaskSubmit}
           initialData={editingTask}
+          adminView={adminView}
         />
       </Stack>
     </Container>

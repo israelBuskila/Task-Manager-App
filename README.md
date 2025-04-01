@@ -100,23 +100,6 @@ npm run dev  # Starts both client and server
 - `PUT /api/tasks/:id` - Update task
 - `DELETE /api/tasks/:id` - Delete task
 
-## Project Structure
-```
-/
-├── client/                # Frontend
-│   └── src/
-│       ├── app/          # Next.js pages
-│       ├── components/   # React components
-│       ├── lib/         # Utilities
-│       └── store/       # State management
-│
-└── server/               # Backend
-    └── src/
-        ├── controllers/  # Route handlers
-        ├── models/      # Database models
-        └── routes/      # API routes
-```
-
 ## Key Features Implemented
 
 ### Task Assignment System
@@ -137,6 +120,47 @@ npm run dev  # Starts both client and server
 - Secure token management
 - Input validation and sanitization
 
+## Task Assignment Flow
+
+### Admin Task Management
+1. **Task Creation**:
+   - Admin creates a new task
+   - Specifies task details (title, description, priority)
+   - Sets due date and reminder date
+   - Assigns task to specific user(s)
+
+2. **Task Monitoring**:
+   - View all tasks in the system
+   - Track task progress and status
+   - Filter tasks by user, status, or priority
+   - Monitor task completion rates
+
+### User Task Management
+1. **Task Creation**:
+   - User creates a personal task
+   - Task is automatically assigned to the creator
+   - Sets task details, priority, and deadlines
+   - Receives notifications for task deadlines
+
+2. **Task Management**:
+   - View all assigned tasks (both self-created and admin-assigned)
+   - Update task status and progress
+   - Modify task details and priority
+   - Delete completed tasks
+   - Filter tasks by status or priority
+
+### Task Notifications
+1. **Reminder System**:
+   - Urgent notifications (1 hour before deadline)
+   - Soon notifications (24 hours before)
+   - Upcoming notifications (72 hours before)
+   - Priority-based notification colors
+
+2. **Status Updates**:
+   - Task completion notifications
+   - Assignment notifications
+   - Deadline reminders
+
 ## License
 
 MIT License
@@ -148,15 +172,3 @@ MIT License
 - [MongoDB](https://www.mongodb.com/) - General purpose, document-based, distributed database
 - [Mantine](https://mantine.dev/) - React components library
 - [Jotai](https://jotai.org/) - Primitive and flexible state management for React 
-
-## Task Assignment Flow
-
-1. **Admin Creates Task**:
-   - Admin creates a new task
-   - Specifies task details (title, description, etc.)
-   - Assigns the task to a specific user
-
-2. **User Manages Assigned Tasks**:
-   - User sees tasks assigned to them
-   - Can update task status/priority
-   - Can delete tasks when completed 

@@ -34,13 +34,39 @@ export const adminApi = {
     }
   },
 
-  getAllTasks: async (filters?: TaskFilters): Promise<ApiResponse<Task[]>> => {
+  getAllTasks: async (filters?: TaskFilters): Promise<Task[]> => {
     try {
-      const response = await api.get<ApiResponse<Task[]>>('/admin/tasks', { params: filters });
+      console.log('Fetching admin tasks with filters:', filters);
+      const response = await api.get<Task[]>('/admin/tasks', { 
+        params: { 
+          ...filters,
+          populate: 'assignedTo,user'
+        } 
+      });
+      
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+      
+      if (!Array.isArray(response.data)) {
+        console.error('Invalid response data:', response.data);
+        throw new Error('Invalid response format: expected array of tasks');
+      }
+      
+      console.log('Admin tasks with populated user data:', 
+        response.data.map(task => ({
+          id: task.id || task._id,
+          title: task.title,
+          assignedTo: task.assignedTo,
+          user: task.user
+        }))
+      );
+      
       return response.data;
     } catch (error: any) {
       console.error('Error in getAllTasks API call:', error);
-      return { success: false, error: error.message || 'Failed to fetch tasks' };
+      // Don't wrap the error, let it propagate
+      throw error;
     }
   },
 };
