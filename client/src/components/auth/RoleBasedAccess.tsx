@@ -22,7 +22,6 @@ export default function RoleBasedAccess({
   const [isAuthenticated] = useAtom(isAuthenticatedAtom);
 
   useEffect(() => {
-    // Check if user is authenticated
     if (isAuthenticated === false) {
       router.push('/login');
       return;

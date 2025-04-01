@@ -57,6 +57,7 @@ export interface CreateTaskInput {
   priority: TaskPriority;
   dueDate: Date;
   reminderDate: Date;
+  assignedTo?: string; // ID of the user this task is assigned to
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {
@@ -82,6 +83,9 @@ export interface TaskFilters {
   };
   search?: string;
   users?: string[]; // Array of user IDs for filtering
+  createdBy?: string; // Filter tasks created by specific user
+  assignedTo?: string; // Filter tasks assigned to specific user
+  userTasks?: string; // Filter tasks either created by or assigned to a user
 }
 
 // Pagination types
