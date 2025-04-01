@@ -1,17 +1,20 @@
 import axios from 'axios';
+import { tokenManager } from '@/lib/auth/token';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
+// Create axios instance with base configuration
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true // Enable sending cookies with cross-origin requests
 });
 
 // Request interceptor for adding auth token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = tokenManager.getToken();
+  console.log('Adding token to request:', !!token);
+  
   if (token && config.headers) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -22,25 +25,25 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response) {
-      // The request was made and the server responded with a status code
-      // that falls out of the range of 2xx
-      return Promise.reject({
-        message: error.response.data.error || 'An error occurred',
-        status: error.response.status,
-      });
-    } else if (error.request) {
-      // The request was made but no response was received
-      return Promise.reject({
-        message: 'No response from server',
-        status: 0,
-      });
-    } else {
-      // Something happened in setting up the request that triggered an Error
-      return Promise.reject({
-        message: error.message,
-        status: 0,
-      });
+    console.error('API Error:', error);
+    
+    if (error.response?.status === 401) {
+      console.log('Unauthorized response, removing token');
+      // Clear token on unauthorized response
+      tokenManager.removeToken();
+      // Redirect to login page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
+    return Promise.reject(error);
   }
 );
+
+export const TASK_ENDPOINTS = {
+  GET_ALL: '/tasks',
+  CREATE: '/tasks',
+  GET_BY_ID: (id: string) => `/tasks/${id}`,
+  UPDATE: (id: string) => `/tasks/${id}`,
+  DELETE: (id: string) => `/tasks/${id}`,
+};

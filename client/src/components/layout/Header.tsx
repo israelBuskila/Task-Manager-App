@@ -5,7 +5,7 @@ import { Group, Title, ActionIcon, Button, Box, Badge, Menu, Text } from '@manti
 import { IconSun, IconMoon, IconBell, IconLogout, IconUser, IconDashboard, IconSettings } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
 import { useRouter, usePathname } from 'next/navigation';
-import { NotificationManager } from '@/lib/notifications';
+import { NotificationManager } from '@/lib/notification/notifications';
 import { useAtom } from 'jotai';
 import { userAtom, logoutAtom } from '@/store/auth';
 import Link from 'next/link';

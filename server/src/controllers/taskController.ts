@@ -102,18 +102,66 @@ export const getTasks = async (req: Request, res: Response) => {
     
     // Filter parameters
     const status = req.query.status as string;
+    const priority = req.query.priority as string;
+    const users = req.query.users as string;
+    const search = req.query.search as string;
     const filterQuery: any = {};
     
-    // If user is not admin, only show their tasks
+    // Build the base query conditions
+    const conditions: any[] = [];
+    
+    // If user is not admin, only show their tasks or tasks assigned to them
     if (req.user.role !== 'admin') {
-      filterQuery.user = req.user._id;
+      conditions.push({
+        $or: [
+          { user: req.user._id },
+          { assignedTo: req.user._id }
+        ]
+      });
     }
     
     // Filter by status if provided
     if (status) {
-      // Map client status to server status for filtering
-      filterQuery.status = mapClientToServerStatus(status);
+      conditions.push({
+        status: mapClientToServerStatus(status)
+      });
     }
+    
+    // Filter by priority if provided
+    if (priority) {
+      const priorities = priority.split(',');
+      conditions.push({
+        priority: { $in: priorities }
+      });
+    }
+    
+    // Filter by users if provided (admin only)
+    if (req.user.role === 'admin' && users) {
+      const userIds = users.split(',');
+      conditions.push({
+        $or: [
+          { user: { $in: userIds } },
+          { assignedTo: { $in: userIds } }
+        ]
+      });
+    }
+    
+    // Filter by search term if provided
+    if (search) {
+      conditions.push({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ]
+      });
+    }
+    
+    // Combine all conditions with $and
+    if (conditions.length > 0) {
+      filterQuery.$and = conditions;
+    }
+    
+    console.log('MongoDB query:', JSON.stringify(filterQuery, null, 2));
     
     const tasks = await Task.find(filterQuery)
       .populate('user', 'firstName lastName email')
@@ -125,26 +173,9 @@ export const getTasks = async (req: Request, res: Response) => {
       const taskObj = task.toObject();
       return {
         ...taskObj,
-        status: mapServerToClientStatus(taskObj.status)
+        status: mapServerToClientStatus(taskObj.status),
+        assignedUser: taskObj.assignedTo
       };
-    });
-    
-    // Generate a hash from the tasks for ETag
-    const tasksJSON = JSON.stringify(clientTasks);
-    const etag = `W/"${Buffer.from(tasksJSON).toString('base64').substring(0, 32)}"`;
-    
-    // Check If-None-Match header for conditional request
-    const ifNoneMatch = req.headers['if-none-match'];
-    if (ifNoneMatch && ifNoneMatch === etag) {
-      // If client has the same version, return 304 Not Modified
-      return res.status(304).send();
-    }
-    
-    // Set caching headers
-    res.set({
-      'ETag': etag,
-      'Cache-Control': 'private, max-age=10', // Cache for 10 seconds privately
-      'Vary': 'Authorization' // Vary the cache by Authorization header
     });
     
     res.json(clientTasks);
@@ -190,7 +221,8 @@ export const getTaskById = async (req: Request, res: Response) => {
     const taskObj = task.toObject();
     const clientTask = {
       ...taskObj,
-      status: mapServerToClientStatus(taskObj.status)
+      status: mapServerToClientStatus(taskObj.status),
+      assignedUser: taskObj.assignedTo
     };
     
     res.json(clientTask);
@@ -224,22 +256,24 @@ export const updateTask = async (req: Request, res: Response) => {
     }
     
     // Check if user has permission to update this task
-    if (req.user.role !== 'admin' && task.user.toString() !== req.user._id.toString()) {
+    const isAdmin = req.user.role === 'admin';
+    const isCreator = task.user.toString() === req.user._id.toString();
+    const isAssigned = task.assignedTo ? task.assignedTo.toString() === req.user._id.toString() : false;
+    
+    if (!isAdmin && !isCreator && !isAssigned) {
       return res.status(403).json({ message: 'Not authorized to update this task' });
     }
     
     // Update task fields
     if (title) task.title = title;
     if (description !== undefined) task.description = description;
-    if (status) task.status = mapClientToServerStatus(status) as any; // Cast to any to bypass type check
+    if (status) task.status = mapClientToServerStatus(status) as any;
     if (reminderDate) task.reminderDate = new Date(reminderDate);
-    if (priority) (task as any).priority = priority; // Cast to any for optional fields
+    if (priority) (task as any).priority = priority;
     if (dueDate) (task as any).dueDate = new Date(dueDate);
     
-    // Note: Task creator (user field) cannot be changed once set
-    
-    // If admin is updating the assignee
-    if (req.user.role === 'admin' && assignedTo) {
+    // Only admin or creator can reassign tasks
+    if (assignedTo && (isAdmin || isCreator)) {
       task.assignedTo = assignedTo;
     }
     
@@ -249,7 +283,8 @@ export const updateTask = async (req: Request, res: Response) => {
     const taskObj = updatedTask.toObject();
     const clientTask = {
       ...taskObj,
-      status: mapServerToClientStatus(taskObj.status)
+      status: mapServerToClientStatus(taskObj.status),
+      assignedUser: taskObj.assignedTo
     };
     
     res.json(clientTask);

@@ -14,7 +14,7 @@ import {
 } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import type { TaskStatus, TaskPriority, TaskFilters as TaskFiltersType } from '@/types';
-import { adminApi } from '@/lib/api/user.api';
+import { adminApi } from '@/lib/api/admin.api';
 import { 
   IconCircleCheck, 
   IconClockHour3, 

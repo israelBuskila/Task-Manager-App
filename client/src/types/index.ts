@@ -5,8 +5,6 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'admin' | 'user';
-  createdAt: Date;
-  updatedAt: Date;
 }
 
 export interface LoginCredentials {

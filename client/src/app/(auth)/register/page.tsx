@@ -20,7 +20,7 @@ import { useRouter } from 'next/navigation';
 import { useAtom } from 'jotai';
 import { RegisterCredentials } from '@/types';
 import { registerAtom, errorAtom, isLoadingAtom } from '@/store/auth';
-import { NotificationManager } from '@/lib/notifications';
+import { NotificationManager } from '@/lib/notification/notifications';
 
 export default function RegisterPage() {
   const router = useRouter();

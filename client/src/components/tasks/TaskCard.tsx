@@ -33,17 +33,8 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = fa
   const [currentUser] = useAtom(userAtom);
   const isAdmin = currentUser?.role === 'admin';
   
-  // Get task ID from either id or _id field
+  // Get task ID from either id or _id fild
   const taskId = task.id || task._id;
-  
-  // Log task details for debugging
-  console.log('Task in TaskCard:', {
-    id: taskId,
-    user: task.user,
-    userId: task.userId,
-    assignedUser: task.assignedUser,
-    assignedTo: task.assignedTo
-  });
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -94,11 +85,6 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = fa
         {isAdmin && showUser && task.assignedUser && (
           <Badge color="indigo">
             Assigned to: {`${task.assignedUser.firstName} ${task.assignedUser.lastName}`}
-          </Badge>
-        )}
-        {isAdmin && showUser && !task.assignedUser && task.user && (
-          <Badge color="indigo">
-            Assigned to: {`${task.user.firstName} ${task.user.lastName}`}
           </Badge>
         )}
       </Group>

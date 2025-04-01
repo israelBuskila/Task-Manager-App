@@ -10,6 +10,7 @@ export const taskApi = {
         throw error;
       }
     },
+
   
     getTask: async (id: string): Promise<ApiResponse<Task>> => {
       try {

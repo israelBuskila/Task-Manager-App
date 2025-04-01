@@ -32,12 +32,10 @@ import {
   IconFileAnalytics
 } from '@tabler/icons-react';
 import { TaskList } from '@/components/tasks/TaskList';
-import { Task, TaskStatus, TaskPriority } from '@/types';
-import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import { useAtom } from 'jotai';
 import { tasksAtom, fetchTasksAtom, isLoadingAtom as tasksLoadingAtom, updateTaskAtom, deleteTaskAtom } from '@/store/tasks';
-import { adminApi } from '@/lib/api/user.api';
-import { NotificationManager } from '@/lib/notifications';
+import { adminApi } from '@/lib/api/admin.api';
+import { NotificationManager } from '@/lib/notification/notifications';
 
 // User type for admin dashboard
 interface UserWithTaskCount {
@@ -48,14 +46,6 @@ interface UserWithTaskCount {
   tasksCount: number;
 }
 
-// Add mock users for development until the admin/users endpoint is implemented
-const mockUsers = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', role: 'user', tasksCount: 5 },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'user', tasksCount: 3 },
-  { id: '3', name: 'Mike Johnson', email: 'mike@example.com', role: 'user', tasksCount: 8 },
-  { id: '4', name: 'Sarah Wilson', email: 'sarah@example.com', role: 'user', tasksCount: 2 },
-];
-
 export default function AdminDashboard() {
   const theme = useMantineTheme();
   const [tasks] = useAtom(tasksAtom);
@@ -65,7 +55,7 @@ export default function AdminDashboard() {
   const [isTasksLoading] = useAtom(tasksLoadingAtom);
   
   // Use state for users but initialize with mock data
-  const [users, setUsers] = useState<UserWithTaskCount[]>(mockUsers);
+  const [users, setUsers] = useState<UserWithTaskCount[]>([]);
   const [isUsersLoading, setIsUsersLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -145,9 +135,6 @@ export default function AdminDashboard() {
         }
       } catch (error) {
         console.error('Error fetching users:', error);
-        // Fallback to mock data if API call fails
-        console.log('Using mock user data as fallback');
-        setUsers(mockUsers);
         setError('Could not connect to server, using mock data');
       } finally {
         setIsUsersLoading(false);
@@ -187,7 +174,6 @@ export default function AdminDashboard() {
   }
 
   return (
-    <RoleBasedAccess allowedRoles={['admin']} fallbackPath="/userDashboard">
       <Container size="xl" py="xl">
         <Stack gap="xl">
           <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 6 }}>
@@ -411,6 +397,5 @@ export default function AdminDashboard() {
           </Tabs>
         </Stack>
       </Container>
-    </RoleBasedAccess>
   );
 }

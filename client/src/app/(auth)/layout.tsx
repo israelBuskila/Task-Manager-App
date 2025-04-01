@@ -6,8 +6,6 @@ import { Notifications } from '@mantine/notifications';
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/notifications/styles.css';
-import { NotificationManager } from '@/lib/notifications';
-import { mockTasks } from '@/lib/mock/tasks';
 import { Header } from '@/components/layout/Header';
 
 export default function AuthLayout({
@@ -29,23 +27,6 @@ export default function AuthLayout({
     if (savedColorScheme) {
       setColorScheme(savedColorScheme);
     }
-  }, []);
-
-  // Check for task reminders
-  useEffect(() => {
-    // In a real app, we would fetch tasks from API here
-    // For now, using mock data to demonstrate functionality
-    const checkReminders = () => {
-      NotificationManager.checkTaskReminders(mockTasks);
-    };
-    
-    // Check reminders on initial load
-    checkReminders();
-    
-    // Set up interval to check periodically (every hour)
-    const interval = setInterval(checkReminders, 60 * 60 * 1000);
-    
-    return () => clearInterval(interval);
   }, []);
 
   return (

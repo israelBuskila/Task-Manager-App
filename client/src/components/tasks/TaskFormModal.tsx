@@ -4,7 +4,7 @@ import { Modal, Alert } from '@mantine/core';
 import { TaskForm } from './TaskForm';
 import { Task, CreateTaskInput, UpdateTaskInput } from '@/types';
 import { useState } from 'react';
-import { NotificationManager } from '@/lib/notifications';
+import { NotificationManager } from '@/lib/notification/notifications';
 
 interface TaskFormModalProps {
   opened: boolean;
@@ -18,21 +18,20 @@ export function TaskFormModal({ opened, onClose, task, onSubmit, adminMode = fal
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  const handleSubmit = async (formData: CreateTaskInput & { userId?: string, assignedTo?: string }) => {
+  const handleSubmit = async (formData: CreateTaskInput | UpdateTaskInput) => {
     try {
       setSubmitting(true);
       setError(null);
       
       if (task?.id) {
-        // For editing, include the task ID but exclude the userId to prevent changing creator
-        const { userId, ...updateData } = formData;
-        await onSubmit({
+        // For editing, include the task ID
+        onSubmit({
           id: task.id,
-          ...updateData
+          ...formData
         });
       } else {
         // For creating new tasks
-        await onSubmit(formData);
+        onSubmit(formData);
       }
       
       // Only close if successful

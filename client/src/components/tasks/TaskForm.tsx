@@ -13,10 +13,10 @@ import {
 } from '@mantine/core';
 import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
-import { Task, CreateTaskInput } from '@/types';
+import { Task, CreateTaskInput, UpdateTaskInput } from '@/types';
 import { useEffect, useState } from 'react';
-import { adminApi } from '@/lib/api/user.api';
-import { NotificationManager } from '@/lib/notifications';
+import { adminApi } from '@/lib/api/admin.api';
+import { NotificationManager } from '@/lib/notification/notifications';
 
 const STATUS_OPTIONS = [
   { value: 'TODO', label: 'Todo' },
@@ -33,7 +33,7 @@ const PRIORITY_OPTIONS = [
 
 interface TaskFormProps {
   task?: Task;
-  onSubmit: (task: CreateTaskInput & { userId?: string }) => void;
+  onSubmit: (task: CreateTaskInput | UpdateTaskInput) => void;
   onCancel: () => void;
   adminMode?: boolean;
 }
@@ -99,27 +99,16 @@ export function TaskForm({ task, onSubmit, onCancel, adminMode = false }: TaskFo
         if (response.success && response.data && response.data.length > 0) {
           const formattedUsers = response.data.map(user => ({
             value: user._id,
-            label: `${user.firstName} ${user.lastName} (${user.email})`
+            label: `${user.firstName} ${user.lastName}`
           }));
           setUsers(formattedUsers);
-        } else {
-          setFallbackMockUsers();
         }
       } catch (error) {
-        setFallbackMockUsers();
+        console.error('Error fetching users:', error);
+        NotificationManager.showError('Failed to load users');
       } finally {
         setIsLoading(false);
       }
-    };
-    
-    const setFallbackMockUsers = () => {
-      // Provide fallback mock data
-      const mockUsers = [
-        { value: '1', label: 'John Doe (john@example.com)' },
-        { value: '2', label: 'Jane Smith (jane@example.com)' },
-        { value: '3', label: 'Admin User (admin@example.com)' }
-      ];
-      setUsers(mockUsers);
     };
     
     fetchUsers();
@@ -136,23 +125,23 @@ export function TaskForm({ task, onSubmit, onCancel, adminMode = false }: TaskFo
     }
   };
   
-  const form = useForm<CreateTaskInput & { userId?: string, assignedTo?: string }>({
+  const form = useForm({
     initialValues: {
       title: task?.title || '',
       description: task?.description || '',
       status: task?.status || 'TODO',
       priority: task?.priority || 'MEDIUM',
-      dueDate: clientSideMounted && task?.dueDate ? formatDate(task.dueDate) : new Date(),
-      reminderDate: clientSideMounted && task?.reminderDate ? formatDate(task.reminderDate) : new Date(),
-      userId: getUserIdFromTask(),
+      dueDate: task?.dueDate ? new Date(task.dueDate) : new Date(),
+      reminderDate: task?.reminderDate ? new Date(task.reminderDate) : new Date(),
       assignedTo: getAssignedUserIdFromTask()
     },
     validate: {
       title: (value) => (!value ? 'Title is required' : null),
       description: (value) => (!value ? 'Description is required' : null),
+      status: (value) => (!value ? 'Status is required' : null),
+      priority: (value) => (!value ? 'Priority is required' : null),
       dueDate: (value) => (!value ? 'Due date is required' : null),
-      userId: (value) => (adminMode && isEditing && !value ? 'User assignment is required' : null),
-      assignedTo: (value) => (adminMode && !value && users.length > 0 ? 'Task assignment is required' : null),
+      reminderDate: (value) => (!value ? 'Reminder date is required' : null)
     }
   });
 
@@ -161,12 +150,33 @@ export function TaskForm({ task, onSubmit, onCancel, adminMode = false }: TaskFo
       NotificationManager.showError('Please fill in all required fields');
       return;
     }
+
+    const formData = form.values;
     
-    try {
-      // Submit the form values
-      onSubmit(form.values);
-    } catch (error) {
-      NotificationManager.showError('Error creating task');
+    // For editing, ensure we have the correct task ID
+    if (isEditing && task) {
+      const taskId = task.id || task._id;
+      if (!taskId) {
+        NotificationManager.showError('Cannot update task: Missing task ID');
+        return;
+      }
+      
+      // Create update input with required fields
+      const updateData: UpdateTaskInput = {
+        id: taskId,
+        title: formData.title,
+        description: formData.description,
+        status: formData.status,
+        priority: formData.priority,
+        dueDate: formData.dueDate,
+        reminderDate: formData.reminderDate,
+        assignedTo: formData.assignedTo || undefined // Only include if it has a value
+      };
+      
+      onSubmit(updateData);
+    } else {
+      // For creating new tasks
+      onSubmit(formData as CreateTaskInput);
     }
   };
 
@@ -208,13 +218,11 @@ export function TaskForm({ task, onSubmit, onCancel, adminMode = false }: TaskFo
                 }
                 {...form.getInputProps('assignedTo')}
               />
-              <input type="hidden" {...form.getInputProps('userId')} />
             </>
           )}
           
           {!adminMode && (
             <>
-              <input type="hidden" {...form.getInputProps('userId')} />
               <input type="hidden" {...form.getInputProps('assignedTo')} />
             </>
           )}

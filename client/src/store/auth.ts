@@ -1,13 +1,22 @@
 import { atom } from 'jotai';
 import { User, LoginCredentials, RegisterCredentials } from '@/types';
-import { api } from '@/utils/api';
-import { AUTH_ENDPOINTS } from '@/config/api';
-import { setCookie, deleteCookie } from 'cookies-next';
+import { authApi } from '@/lib/api/auth.api';
+import { tokenManager } from '@/lib/auth/token';
+import { NotificationManager } from '@/lib/notification/notifications';
 
 export const userAtom = atom<User | null>(null);
 export const isAuthenticatedAtom = atom((get) => !!get(userAtom));
 export const isLoadingAtom = atom(false);
 export const errorAtom = atom<string | null>(null);
+
+// Helper function to map database user to frontend user type
+const mapDbUserToUser = (dbUser: any): User => ({
+  id: dbUser._id,
+  firstName: dbUser.firstName,
+  lastName: dbUser.lastName,
+  email: dbUser.email,
+  role: dbUser.role
+});
 
 // Derived atoms for auth actions
 export const loginAtom = atom(
@@ -17,36 +26,36 @@ export const loginAtom = atom(
       set(isLoadingAtom, true);
       set(errorAtom, null);
       
-      const response = await api.post<User & { token: string }>(
-        AUTH_ENDPOINTS.LOGIN,
-        credentials,
-        false
-      );
+      const response = await authApi.login(credentials);
       
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Login failed');
+      if (!response.data) {
+        throw new Error('No data received from server');
+      }
+
+      const { token, ...userData } = response.data;
+      
+      if (!token) {
+        throw new Error('No token received from server');
       }
       
-      const userData = response.data;
-      
-      // Store token in localStorage for API requests
-      localStorage.setItem('token', userData.token);
-      
-      // Also set a cookie for middleware access
-      setCookie('token', userData.token, { 
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/'
-      });
+      // Store token using token manager
+      tokenManager.setToken(token);
 
-      console.log('Login successful:', userData);
+      const user = mapDbUserToUser(userData);
       
-      // Remove token from user object before storing
-      const { token, ...userWithoutToken } = userData;
-      set(userAtom, userWithoutToken);
+      // Store user data without token
+      set(userAtom, user);
       
-      return userData;
+      // Force a state update
+      set(isLoadingAtom, false);
+      
+      // Return the mapped user data
+      return user;
     } catch (error) {
-      set(errorAtom, error instanceof Error ? error.message : 'Login failed');
+      console.error('Login error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      set(errorAtom, errorMessage);
+      NotificationManager.showError(errorMessage);
       throw error;
     } finally {
       set(isLoadingAtom, false);
@@ -61,26 +70,18 @@ export const registerAtom = atom(
       set(isLoadingAtom, true);
       set(errorAtom, null);
       
-      const response = await api.post<{ token: string; user: User }>(
-        AUTH_ENDPOINTS.REGISTER,
-        credentials,
-        false
-      );
+      const response = await authApi.register(credentials);
       
       if (!response.success || !response.data) {
         throw new Error(response.error || 'Registration failed');
       }
       
-      // Store token in localStorage for API requests
-      localStorage.setItem('token', response.data.token);
+      const { token, ...userData } = response.data;
       
-      // Also set a cookie for middleware access
-      setCookie('token', response.data.token, { 
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        path: '/'
-      });
+      // Store token using token manager
+      tokenManager.setToken(token);
       
-      set(userAtom, response.data.user);
+      set(userAtom, mapDbUserToUser(userData));
     } catch (error) {
       set(errorAtom, error instanceof Error ? error.message : 'Registration failed');
       throw error;
@@ -96,26 +97,30 @@ export const loadUserAtom = atom(
   async (get, set) => {
     try {
       // Skip if no token exists
-      if (typeof window === 'undefined' || !localStorage.getItem('token')) {
+      if (!tokenManager.hasToken()) {
+        console.log('No token found, skipping user load');
         return;
       }
       
       set(isLoadingAtom, true);
+      console.log('Loading user data...');
       
-      const response = await api.get<User>(AUTH_ENDPOINTS.PROFILE);
+      const response = await authApi.getCurrentUser();
+      console.log('Current user response:', response);
       
-      if (!response.success || !response.data) {
-        // Clear invalid token
-        localStorage.removeItem('token');
-        deleteCookie('token');
+      if (!response.data) {
+        console.log('No user data received, clearing token');
+        tokenManager.removeToken();
         return;
       }
       
-      set(userAtom, response.data);
+      const { token, ...userData } = response.data;
+      const user = mapDbUserToUser(userData);
+      console.log('Setting user data:', user);
+      set(userAtom, user);
     } catch (error) {
       console.error('Failed to load user:', error);
-      localStorage.removeItem('token');
-      deleteCookie('token');
+      tokenManager.removeToken();
     } finally {
       set(isLoadingAtom, false);
     }
@@ -125,8 +130,7 @@ export const loadUserAtom = atom(
 export const logoutAtom = atom(
   null,
   async (get, set) => {
-    localStorage.removeItem('token');
-    deleteCookie('token');
+    tokenManager.removeToken();
     set(userAtom, null);
   }
 ); 

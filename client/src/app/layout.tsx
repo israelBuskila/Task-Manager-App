@@ -5,9 +5,7 @@ import '@mantine/notifications/styles.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { ColorSchemeScript, MantineProvider } from '@mantine/core';
-import AuthProvider from '@/components/layout/AuthProvider';
 import JotaiProvider from '@/components/layout/JotaiProvider';
-
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
@@ -28,9 +26,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <MantineProvider>
           <JotaiProvider>
-            <AuthProvider>
               {children}
-            </AuthProvider>
           </JotaiProvider>
         </MantineProvider>
       </body>

@@ -1,7 +1,6 @@
 import { atom } from 'jotai';
 import { Task, TaskFilters, CreateTaskInput, UpdateTaskInput } from '@/types';
-import { api } from '@/utils/api';
-import { TASK_ENDPOINTS } from '@/config/api';
+import { api, TASK_ENDPOINTS } from '@/lib/api/index.api';
 import { userAtom } from './auth';
 
 // Tasks state
@@ -17,70 +16,37 @@ const DEBOUNCE_INTERVAL = 5000; // 5 seconds
 // Get tasks with optional filters
 export const fetchTasksAtom = atom(
   null,
-  async (get, set, filters?: TaskFilters) => {
+  async (get, set) => {
     try {
-      // Check if we've fetched recently to prevent excessive API calls
+      const user = get(userAtom);
+      if (!user) return [];
+
       const lastFetchTime = get(lastFetchTimeAtom);
       const now = Date.now();
       
       if (now - lastFetchTime < DEBOUNCE_INTERVAL) {
         console.log(`Skipping task fetch - last fetch was ${(now - lastFetchTime) / 1000}s ago`);
-        return get(tasksAtom); // Return existing tasks
+        return get(tasksAtom);
       }
       
-      // Update last fetch time
       set(lastFetchTimeAtom, now);
-      
-      console.log('Fetching tasks...');
       set(isLoadingAtom, true);
       set(errorAtom, null);
       
-      const currentFilters = filters || get(taskFiltersAtom);
-      
-      // Build query string from filters
-      const queryParams = new URLSearchParams();
-      
-      if (currentFilters.status && currentFilters.status.length > 0) {
-        queryParams.set('status', currentFilters.status.join(','));
-      }
-      
-      if (currentFilters.search) {
-        queryParams.set('search', currentFilters.search);
-      }
-      
-      const url = `${TASK_ENDPOINTS.GET_ALL}?${queryParams.toString()}`;
-      console.log('Fetching tasks from URL:', url);
-      
-      // Add timeout for fetch operation
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-      
       try {
-        const response = await api.get<Task[]>(url);
-        clearTimeout(timeoutId);
+        // For regular users, only fetch their assigned tasks
+        const endpoint = user.role === 'admin' 
+          ? TASK_ENDPOINTS.GET_ALL
+          : `${TASK_ENDPOINTS.GET_ALL}?assignedTo=${user.id}`;
         
-        console.log('Task response:', response);
+        const response = await api.get<Task[]>(endpoint);
         
-        if (!response.success) {
-          throw new Error(response.error || 'Failed to fetch tasks');
+        if (!response.data) {
+          throw new Error('No data received from server');
         }
         
-        // If we received a cached response, keep using existing data
-        if (response.cached) {
-          console.log('Using cached task data');
-          return get(tasksAtom);
-        }
-        
-        // Only update the atom if we have new data
-        if (response.data) {
-          set(tasksAtom, response.data);
-        }
-        
-        if (filters) {
-          set(taskFiltersAtom, filters);
-        }
-        
-        return response.data || get(tasksAtom);
+        set(tasksAtom, response.data);
+        return response.data;
       } catch (error: any) {
         if (error.name === 'AbortError') {
           throw new Error('Request timed out. Please try again later.');
@@ -125,25 +91,21 @@ export const createTaskAtom = atom(
         dataToSend.assignedTo = assignedTo;
       }
       
-      console.log('Sending task creation request:', dataToSend);
       const response = await api.post<Task>(TASK_ENDPOINTS.CREATE, dataToSend);
-      console.log('Task creation response:', response);
       
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to create task');
+      if (!response.data) {
+        throw new Error('Failed to create task');
       }
       
       // Update task list with the new task
       const currentTasks = get(tasksAtom);
-      const newTask = response.data as Task; // Ensure it's not undefined
-      console.log('Adding new task to state:', newTask);
+      const newTask = response.data;
       
       // Add the new task to the beginning of the array
       set(tasksAtom, [newTask, ...currentTasks]);
       
       return newTask;
     } catch (error) {
-      console.error('Task creation error:', error);
       set(errorAtom, error instanceof Error ? error.message : 'Failed to create task');
       throw error;
     } finally {
@@ -155,73 +117,47 @@ export const createTaskAtom = atom(
 // Update an existing task
 export const updateTaskAtom = atom(
   null,
-  async (get, set, taskData: UpdateTaskInput & { userId?: string, assignedTo?: string, _id?: string }) => {
+  async (get, set, taskData: UpdateTaskInput) => {
     try {
       set(isLoadingAtom, true);
       set(errorAtom, null);
-      
-      // Get task ID from either id or _id field
-      const taskId = taskData.id || taskData._id;
-      
-      // Validate that we have a proper task ID
-      if (!taskId || taskId === 'undefined') {
-        console.error('Invalid task ID in updateTaskAtom:', taskData);
-        throw new Error('Invalid task ID. Cannot update task.');
+
+      if (!taskData.id) {
+        throw new Error('Invalid task ID');
       }
 
-      console.log('Updating task with ID:', taskId, 'and data:', taskData);
+      // Remove the id from the data to send to the API
+      const { id, ...updateData } = taskData;
+
+      const response = await api.put<Task>(TASK_ENDPOINTS.UPDATE(id), updateData);
       
-      // Ensure we're passing the ID in the format the API expects
-      const dataToSend = {
-        ...taskData,
-        id: taskId
-      };
-      
-      // Extract fields to send to the API
-      const { userId, assignedTo, _id, ...taskUpdateData } = dataToSend;
-      
-      // Prepare final data object with special fields
-      const finalData: any = { ...taskUpdateData };
-      
-      // Note: userId is not sent during updates as task creator cannot be changed
-      
-      // Add assignedTo if provided
-      if (assignedTo) {
-        finalData.assignedTo = assignedTo;
+      if (!response.data) {
+        throw new Error('Failed to update task');
       }
-      
-      const url = TASK_ENDPOINTS.UPDATE(taskId);
-      console.log('API request URL:', url);
-      console.log('API request data:', finalData);
-      
-      const response = await api.put<Task>(url, finalData);
-      console.log('API response:', response);
-      
-      if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to update task');
-      }
-      
+
       // Update the task in the local state
       const currentTasks = get(tasksAtom);
-      const updatedTask = response.data as Task; 
-      
-      // Ensure the updatedTask has an id property (for consistency)
-      if (!updatedTask.id && updatedTask._id) {
-        updatedTask.id = updatedTask._id;
-      }
-      
       const updatedTasks = currentTasks.map(task => {
-        const taskIdentifier = task.id || task._id;
-        const updatedIdentifier = updatedTask.id || updatedTask._id;
-        return taskIdentifier === updatedIdentifier ? updatedTask : task;
+        // Check both id and _id for MongoDB compatibility
+        const taskId = task.id || task._id;
+        if (taskId === id) {
+          // Merge the existing task with the updated data
+          return {
+            ...task,
+            ...response.data,
+            // Ensure we keep the original id/_id
+            id: task.id || response.data.id,
+            _id: task._id || response.data._id
+          };
+        }
+        return task;
       });
       
       set(tasksAtom, updatedTasks);
       
-      return updatedTask;
+      return response.data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update task';
-      console.error('Error updating task:', errorMessage);
       set(errorAtom, errorMessage);
       throw error;
     } finally {
@@ -268,27 +204,21 @@ export const deleteTaskAtom = atom(
       console.log('API deletion response:', response);
       
       // Handle API error responses
-      if (!response.success) {
-        // Special handling for 404 Not Found responses
-        if (response.error && response.error.includes('not found')) {
-          console.error(`Task with ID ${taskId} not found on server. It may have been already deleted.`);
-          
-          // Even though the server didn't find it, remove it from local state anyway
-          const updatedTasks = currentTasks.filter(task => {
-            const taskIdentifier = task.id || task._id;
-            return taskIdentifier !== taskId;
-          });
-          
-          set(tasksAtom, updatedTasks);
-          throw new Error('Task not found on server. It may have been already deleted.');
-        }
+      if (response.status === 404) {
+        console.error(`Task with ID ${taskId} not found on server. It may have been already deleted.`);
         
-        throw new Error(response.error || 'Failed to delete task');
+        // Even though the server didn't find it, remove it from local state anyway
+        const updatedTasks = currentTasks.filter(task => {
+          const taskIdentifier = task.id || task._id;
+          return taskIdentifier !== taskId;
+        });
+        
+        set(tasksAtom, updatedTasks);
+        throw new Error('Task not found on server. It may have been already deleted.');
       }
       
       // Remove the task from the local state
       const updatedTasks = currentTasks.filter(task => {
-        // Check against both id and _id fields
         const taskIdentifier = task.id || task._id;
         return taskIdentifier !== taskId;
       });
@@ -306,22 +236,50 @@ export const deleteTaskAtom = atom(
   }
 );
 
-// Filter tasks by user role (admin sees all, user only sees their tasks)
-export const filteredTasksAtom = atom(get => {
+// Filtered tasks atom - only handles client-side filtering
+export const filteredTasksAtom = atom((get) => {
   const tasks = get(tasksAtom);
+  const filters = get(taskFiltersAtom);
   const user = get(userAtom);
   
-  if (!user) return [];
+  if (!user || !tasks) return [];
   
-  // Admin sees all tasks
-  if (user.role === 'admin') {
-    return tasks;
+  let filteredTasks = tasks;
+  
+  // Apply status filter
+  const statusFilters = filters?.status;
+  if (statusFilters && statusFilters.length > 0) {
+    filteredTasks = filteredTasks.filter(task => 
+      statusFilters.includes(task.status)
+    );
   }
   
-  // Regular user only sees tasks they created
-  return tasks.filter(task => {
-    // Check if task was created by the current user
-    const creatorId = task.userId || task.user?._id;
-    return creatorId === user.id;
-  });
+  // Apply priority filter
+  const priorityFilters = filters?.priority;
+  if (priorityFilters && priorityFilters.length > 0) {
+    filteredTasks = filteredTasks.filter(task => 
+      priorityFilters.includes(task.priority)
+    );
+  }
+  
+  // Apply search filter
+  const searchTerm = filters?.search?.trim();
+  if (searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    filteredTasks = filteredTasks.filter(task => {
+      const titleMatch = task.title.toLowerCase().includes(searchLower);
+      const descriptionMatch = task.description.toLowerCase().includes(searchLower);
+      const statusMatch = task.status.toLowerCase().includes(searchLower);
+      const priorityMatch = task.priority.toLowerCase().includes(searchLower);
+      
+      // Check assigned user name if available
+      const assignedUserName = task.assignedUser ? 
+        `${task.assignedUser.firstName} ${task.assignedUser.lastName}`.toLowerCase() : '';
+      const assignedUserMatch = assignedUserName.includes(searchLower);
+      
+      return titleMatch || descriptionMatch || statusMatch || priorityMatch || assignedUserMatch;
+    });
+  }
+  
+  return filteredTasks;
 }); 

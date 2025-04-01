@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ApiResponse, LoginCredentials, RegisterCredentials, Task, CreateTaskInput, UpdateTaskInput, TaskFilters } from '@/types';
+import { ApiResponse, Task, TaskFilters } from '@/types';
 import { api } from './index.api';
 
 export const adminApi = {
@@ -15,7 +15,6 @@ export const adminApi = {
 
   getUsersWithTaskCount: async (): Promise<ApiResponse<any[]>> => {
     try {
-      console.log('Calling API endpoint: /admin/users/with-tasks');
       const response = await api.get<ApiResponse<any[]>>('/admin/users/with-tasks');
       console.log('Raw API response:', response);
       

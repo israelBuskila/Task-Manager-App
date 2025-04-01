@@ -61,6 +61,7 @@ export const login = async (req: Request, res: Response) => {
     
     // Find user
     const user = await User.findOne({ email });
+    console.log(user);
     
     // Check if user exists and password matches
     if (user && (await user.comparePassword(password))) {
