@@ -24,12 +24,12 @@ export class NotificationManager {
     return tasksToRemind.length;
   }
 
-  static showTaskReminder(task: Task) {
-    const dueDate = new Date(task.dueDate).toLocaleDateString();
+  static showTaskReminder(task: Task, customMessage?: string) {
+    const reminderDate = new Date(task.reminderDate).toLocaleDateString();
     
     notifications.show({
-      title: `Reminder: ${task.title}`,
-      message: `This task is due on ${dueDate}. Don't forget to complete it!`,
+      title: task.title,
+      message: customMessage || `This task has a reminder set for ${reminderDate}`,
       color: task.priority === 'HIGH' ? 'red' : 
              task.priority === 'MEDIUM' ? 'yellow' : 'blue',
       autoClose: 10000, // 10 seconds

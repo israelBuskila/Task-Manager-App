@@ -1,6 +1,6 @@
 # Task Management Application
 
-A modern full-stack task management application built with Next.js, Express, and MongoDB. This application allows admins to assign and manage tasks, while users can manage their assigned tasks.
+A modern full-stack task management application built with Next.js, Express, and MongoDB. This application allows admins to assign and manage tasks, while users can manage their assigned tasks and receive timely reminders.
 
 ## Features
 
@@ -21,6 +21,17 @@ A modern full-stack task management application built with Next.js, Express, and
     - View their assigned tasks
     - Update task status and details
     - Delete their assigned tasks
+- **Smart Reminder System**:
+  - Three-tier reminder notifications:
+    - Urgent (1 hour before deadline)
+    - Soon (24 hours before)
+    - Upcoming (72 hours before)
+  - Priority-based color coding
+  - Automatic reminder checks on:
+    - Login
+    - Page refresh
+    - Every minute while active
+  - Duplicate prevention system
 - **Task Filtering**: 
   - Filter by status
   - Filter by priority
@@ -35,6 +46,7 @@ A modern full-stack task management application built with Next.js, Express, and
 - **Framework**: React with Next.js 14 (App Router)
 - **UI Library**: Mantine v7
 - **State Management**: Jotai
+- **Notifications**: Mantine Notifications
 - **Styling**: CSS Modules and Mantine components
 - **Typescript**: For type safety
 
@@ -166,7 +178,7 @@ Open your browser and navigate to `http://localhost:3000`
 
 ### Admin Workflow
 1. Log in as admin
-2. Create new tasks
+2. Create new tasks with reminder dates
 3. Assign tasks to specific users
 4. View all tasks in the system
 5. Filter tasks by user
@@ -174,10 +186,21 @@ Open your browser and navigate to `http://localhost:3000`
 
 ### User Workflow
 1. Log in as regular user
-2. View tasks assigned by admin
-3. Update task status/priority
-4. Delete completed tasks
-5. Filter assigned tasks by status/priority
+2. Receive reminder notifications for approaching tasks
+3. View tasks assigned by admin
+4. Update task status/priority
+5. Delete completed tasks
+6. Filter assigned tasks by status/priority
+
+### Testing Reminders
+1. Create a task with a reminder date:
+   - Set within 1 hour for urgent notification
+   - Set within 24 hours for soon notification
+   - Set within 72 hours for upcoming notification
+2. Log out and log back in to see reminders
+3. Refresh the page to verify reminder persistence
+4. Complete a task to verify reminder stops
+5. Create multiple tasks to test notification grouping
 
 ## User Roles and Permissions
 
@@ -196,6 +219,41 @@ Open your browser and navigate to `http://localhost:3000`
 - Delete their assigned tasks
 - Filter their tasks by status and priority
 - Search within their assigned tasks
+
+## Task Reminder System
+
+### Reminder Stages
+1. **Urgent Reminders** (1 hour before)
+   - 🚨 Urgent indicator in title
+   - Red notification for high priority tasks
+   - Immediate attention required
+
+2. **Soon Reminders** (24 hours before)
+   - Shows hours remaining
+   - Color-coded by task priority
+   - Preparation time notification
+
+3. **Upcoming Reminders** (72 hours before)
+   - Shows days remaining
+   - Color-coded by task priority
+   - Early planning notification
+
+### Priority Colors
+- High Priority: Red notifications
+- Medium Priority: Yellow notifications
+- Low Priority: Blue notifications
+
+### Reminder Triggers
+- On user login
+- On page refresh (if logged in)
+- Every minute while using the application
+- When tasks are updated
+
+### Duplicate Prevention
+- Each reminder stage tracked separately
+- Once-per-day notification limit
+- Midnight reset for new day
+- Completed tasks excluded
 
 ## API Endpoints
 

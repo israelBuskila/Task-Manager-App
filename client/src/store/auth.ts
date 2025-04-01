@@ -3,6 +3,8 @@ import { User, LoginCredentials, RegisterCredentials } from '@/types';
 import { authApi } from '@/lib/api/auth.api';
 import { tokenManager } from '@/lib/auth/token';
 import { NotificationManager } from '@/lib/notification/notifications';
+import { checkReminders } from '@/lib/notification/utils';
+import { tasksAtom, fetchTasksAtom } from './tasks';
 
 export const userAtom = atom<User | null>(null);
 export const isAuthenticatedAtom = atom((get) => !!get(userAtom));
@@ -17,6 +19,20 @@ const mapDbUserToUser = (dbUser: any): User => ({
   email: dbUser.email,
   role: dbUser.role
 });
+
+// Helper function to check reminders after loading tasks
+const checkUserReminders = async (get: any, set: any) => {
+  try {
+    const fetchTasks = get(fetchTasksAtom)[1];
+    await fetchTasks();
+    const tasks = get(tasksAtom);
+    if (tasks.length > 0) {
+      checkReminders(tasks);
+    }
+  } catch (error) {
+    console.error('Error checking reminders:', error);
+  }
+};
 
 // Derived atoms for auth actions
 export const loginAtom = atom(
@@ -46,8 +62,8 @@ export const loginAtom = atom(
       // Store user data without token
       set(userAtom, user);
       
-      // Force a state update
-      set(isLoadingAtom, false);
+      // Check reminders after login
+      await checkUserReminders(get, set);
       
       // Return the mapped user data
       return user;
@@ -118,6 +134,9 @@ export const loadUserAtom = atom(
       const user = mapDbUserToUser(userData);
       console.log('Setting user data:', user);
       set(userAtom, user);
+      
+      // Check reminders after loading user
+      await checkUserReminders(get, set);
     } catch (error) {
       console.error('Failed to load user:', error);
       tokenManager.removeToken();

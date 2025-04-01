@@ -37,6 +37,24 @@ export function TaskList({ adminView = false }: TaskListProps) {
   
   const isMounted = useRef(false);
 
+  // Set up reminder checking
+  useEffect(() => {
+    // Check reminders immediately
+    if (filteredTasks.length > 0) {
+      checkReminders(filteredTasks);
+    }
+
+    // Set up interval to check reminders every minute
+    const intervalId = setInterval(() => {
+      if (filteredTasks.length > 0) {
+        checkReminders(filteredTasks);
+      }
+    }, 60000); // Check every minute
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, [filteredTasks]); // Re-run when filtered tasks change
+
   // Helper function to load tasks
   const loadTasks = useCallback(async () => {
     try {
@@ -50,9 +68,9 @@ export function TaskList({ adminView = false }: TaskListProps) {
   }, [fetchTasks]);
 
   // Handle filter changes
-  const handleFilterChange = (newFilters: TaskFiltersType) => {
+  const handleFilterChange = useCallback((newFilters: TaskFiltersType) => {
     setFilters(newFilters);
-  };
+  }, [setFilters]);
 
   // Load tasks on mount
   useEffect(() => {
@@ -63,25 +81,29 @@ export function TaskList({ adminView = false }: TaskListProps) {
   }, [loadTasks]);
 
   // Manual refresh function
-  const handleRefresh = useCallback(() => {
-    loadTasks();
-  }, [loadTasks]);
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await fetchTasks();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchTasks]);
 
   // Handle task status changes
-  const handleStatusChange = useCallback(async (taskId: string, status: Task['status']) => {
-    const taskToUpdate = tasks.find(task => task.id === taskId || task._id === taskId);
-    if (!taskToUpdate) return;
+  const handleStatusChange = useCallback(async (taskId: string, newStatus: Task['status']) => {
+    if (!taskId) {
+      NotificationManager.showError('Cannot update task: Missing task ID');
+      return;
+    }
     
     try {
-      await updateTask({
-        id: taskId,
-        status
-      });
-      NotificationManager.showTaskStatusChanged({...taskToUpdate, status});
+      await updateTask({ id: taskId, status: newStatus });
+      NotificationManager.showTaskStatusChanged({ id: taskId, status: newStatus } as Task);
     } catch (error) {
       NotificationManager.showError('Failed to update task status');
     }
-  }, [tasks, updateTask]);
+  }, [updateTask]);
 
   // Handle task deletion
   const handleTaskDelete = useCallback(async (taskId: string) => {
@@ -158,11 +180,6 @@ export function TaskList({ adminView = false }: TaskListProps) {
       NotificationManager.showError('Failed to save task');
     }
   }, [adminView, createTask, updateTask, user]);
-
-  useEffect(() => {
-    if (filteredTasks.length === 0) return;
-    checkReminders(filteredTasks);
-  }, []);
 
   // Show loading state
   if (isLoading && tasks.length === 0) {
