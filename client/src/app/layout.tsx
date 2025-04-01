@@ -4,7 +4,7 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { ColorSchemeScript } from '@mantine/core';
+import { ColorSchemeScript, MantineProvider } from '@mantine/core';
 import AuthProvider from '@/components/layout/AuthProvider';
 import JotaiProvider from '@/components/layout/JotaiProvider';
 
@@ -26,11 +26,13 @@ export default function RootLayout({
         <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body className={inter.className}>
-        <JotaiProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </JotaiProvider>
+        <MantineProvider>
+          <JotaiProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </JotaiProvider>
+        </MantineProvider>
       </body>
     </html>
   );

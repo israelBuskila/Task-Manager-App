@@ -15,7 +15,7 @@ import { DatePickerInput } from '@mantine/dates';
 import { useForm } from '@mantine/form';
 import { Task, CreateTaskInput } from '@/types';
 import { useEffect, useState } from 'react';
-import { adminApi } from '@/lib/api/client';
+import { adminApi } from '@/lib/api/user.api';
 import { NotificationManager } from '@/lib/notifications';
 
 const STATUS_OPTIONS = [

@@ -36,7 +36,7 @@ import { Task, TaskStatus, TaskPriority } from '@/types';
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import { useAtom } from 'jotai';
 import { tasksAtom, fetchTasksAtom, isLoadingAtom as tasksLoadingAtom, updateTaskAtom, deleteTaskAtom } from '@/store/tasks';
-import { adminApi } from '@/lib/api/client';
+import { adminApi } from '@/lib/api/user.api';
 import { NotificationManager } from '@/lib/notifications';
 
 // User type for admin dashboard
