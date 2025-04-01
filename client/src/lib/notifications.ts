@@ -110,6 +110,15 @@ export class NotificationManager {
     });
   }
 
+  static showInfo(message: string) {
+    notifications.show({
+      title: 'Information',
+      message,
+      color: 'blue',
+      autoClose: 5000,
+    });
+  }
+
   // Debug method to force show a reminder for testing
   static showTestReminder() {
     const testTask: Task = {

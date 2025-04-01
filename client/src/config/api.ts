@@ -1,6 +1,9 @@
 // API configuration
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+// Log API configuration during initialization
+console.log('API Base URL:', API_BASE_URL);
+
 // Auth endpoints
 export const AUTH_ENDPOINTS = {
   LOGIN: `${API_BASE_URL}/login`,

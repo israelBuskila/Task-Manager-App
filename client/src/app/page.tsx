@@ -16,9 +16,9 @@ export default function Home() {
     if (isAuthenticated === true) {
       // Redirect to the appropriate dashboard based on user role
       if (user?.role === 'admin') {
-        router.push('/(auth)/(dashboard)/admin');
+        router.push('/adminDashboard');
       } else {
-        router.push('/(auth)/(dashboard)/user');
+        router.push('/userDashboard');
       }
     } else if (isAuthenticated === false) {
       // Redirect to login if not authenticated

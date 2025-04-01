@@ -2,19 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 import { UserDocument } from '../types';
+// Import the extended types
+import '../types';
 
 interface JwtPayload {
   id: string;
 }
 
-// Extend Express Request interface
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserDocument;
-    }
-  }
-}
+// Remove duplicate declaration
+// declare global {
+//   namespace Express {
+//     interface Request {
+//       user?: UserDocument;
+//     }
+//   }
+// }
 
 export const protect = async (req: Request, res: Response, next: NextFunction) => {
   try {

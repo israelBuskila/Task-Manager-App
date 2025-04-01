@@ -16,9 +16,9 @@ export async function middleware(request: NextRequest) {
         const { payload } = await jwtVerify(token, secret);
         
         if (payload.role === 'admin') {
-          return NextResponse.redirect(new URL('/(auth)/(dashboard)/admin', request.url));
+          return NextResponse.redirect(new URL('/adminDashboard', request.url));
         } else {
-          return NextResponse.redirect(new URL('/(auth)/(dashboard)/user', request.url));
+          return NextResponse.redirect(new URL('/userDashboard', request.url));
         }
       } catch (error) {
         // Invalid token, continue to login/register page
@@ -39,9 +39,9 @@ export async function middleware(request: NextRequest) {
       const { payload } = await jwtVerify(token, secret);
 
       // Check role-based access for admin routes
-      if (pathname.includes('/(dashboard)/admin') && payload.role !== 'admin') {
+      if (pathname.startsWith('/adminDashboard') && payload.role !== 'admin') {
         // Unauthorized access to admin routes
-        return NextResponse.redirect(new URL('/(auth)/(dashboard)/user', request.url));
+        return NextResponse.redirect(new URL('/userDashboard', request.url));
       }
 
       return NextResponse.next();

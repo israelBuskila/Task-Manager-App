@@ -9,7 +9,6 @@ import '@mantine/notifications/styles.css';
 import { NotificationManager } from '@/lib/notifications';
 import { mockTasks } from '@/lib/mock/tasks';
 import { Header } from '@/components/layout/Header';
-import AuthProvider from '@/components/layout/AuthProvider';
 
 export default function AuthLayout({
   children,
@@ -17,6 +16,12 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted state after initial render
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Load color scheme from localStorage on mount
   useEffect(() => {
@@ -44,19 +49,17 @@ export default function AuthLayout({
   }, []);
 
   return (
-    <>
-      <ColorSchemeScript />
-      <MantineProvider defaultColorScheme={colorScheme}>
-        <AuthProvider>
-          <Notifications position="top-right" zIndex={2000} />
-          <div style={{ minHeight: '100vh' }}>
-            <Header />
-            <main style={{ padding: '1rem' }}>
-              {children}
-            </main>
-          </div>
-        </AuthProvider>
-      </MantineProvider>
-    </>
+    <MantineProvider
+      defaultColorScheme="light"
+      {...(mounted ? { colorScheme } : {})}
+    >
+      <Notifications position="top-right" zIndex={2000} />
+      <div style={{ minHeight: '100vh' }}>
+        <Header />
+        <main style={{ padding: '1rem' }}>
+          {children}
+        </main>
+      </div>
+    </MantineProvider>
   );
 } 

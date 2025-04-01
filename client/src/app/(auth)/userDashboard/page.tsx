@@ -1,10 +1,20 @@
 'use client';
 
+import { useEffect } from 'react';
 import { TaskList } from '@/components/tasks/TaskList';
 import RoleBasedAccess from '@/components/auth/RoleBasedAccess';
 import { Container, Title, Text } from '@mantine/core';
+import { useAtom } from 'jotai';
+import { fetchTasksAtom } from '@/store/tasks';
 
-export default function UserDashboardPage() {
+export default function UserDashboard() {
+  const [, fetchTasks] = useAtom(fetchTasksAtom);
+  
+  // Fetch tasks when component mounts
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
+
   return (
     <RoleBasedAccess allowedRoles={['user', 'admin']} fallbackPath="/login">
       <Container size="xl" py="xl">

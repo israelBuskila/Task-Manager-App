@@ -4,6 +4,8 @@ import { Card, Text, Group, Badge, ActionIcon, Menu } from '@mantine/core';
 import { IconDotsVertical, IconEdit, IconTrash } from '@tabler/icons-react';
 import { Task, TaskStatus, TaskPriority } from '@/types';
 import dayjs from 'dayjs';
+import { useAtom } from 'jotai';
+import { userAtom } from '@/store/auth';
 
 const statusColors: Record<TaskStatus, string> = {
   TODO: 'blue',
@@ -23,11 +25,25 @@ interface TaskCardProps {
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
   onStatusChange: (taskId: string, status: TaskStatus) => void;
-  showAssignee?: boolean;
+  showUser?: boolean;
 }
 
-export function TaskCard({ task, onEdit, onDelete, onStatusChange, showAssignee = false }: TaskCardProps) {
+export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = false }: TaskCardProps) {
   const isOverdue = dayjs(task.dueDate).isBefore(dayjs(), 'day');
+  const [currentUser] = useAtom(userAtom);
+  const isAdmin = currentUser?.role === 'admin';
+  
+  // Get task ID from either id or _id field
+  const taskId = task.id || task._id;
+  
+  // Log task details for debugging
+  console.log('Task in TaskCard:', {
+    id: taskId,
+    user: task.user,
+    userId: task.userId,
+    assignedUser: task.assignedUser,
+    assignedTo: task.assignedTo
+  });
 
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
@@ -51,7 +67,7 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showAssignee 
             <Menu.Item
               leftSection={<IconTrash size={14} />}
               color="red"
-              onClick={() => onDelete(task.id)}
+              onClick={() => onDelete(taskId || '')}
             >
               Delete
             </Menu.Item>
@@ -70,9 +86,19 @@ export function TaskCard({ task, onEdit, onDelete, onStatusChange, showAssignee 
         <Badge color={priorityColors[task.priority]}>
           {task.priority}
         </Badge>
-        {showAssignee && task.assignedTo && (
-          <Badge color="blue" variant="outline">
-            Assigned to: {task.assignedTo}
+        {isAdmin && showUser && task.user && (
+          <Badge color="blue">
+            Created by: {`${task.user.firstName} ${task.user.lastName}`}
+          </Badge>
+        )}
+        {isAdmin && showUser && task.assignedUser && (
+          <Badge color="indigo">
+            Assigned to: {`${task.assignedUser.firstName} ${task.assignedUser.lastName}`}
+          </Badge>
+        )}
+        {isAdmin && showUser && !task.assignedUser && task.user && (
+          <Badge color="indigo">
+            Assigned to: {`${task.user.firstName} ${task.user.lastName}`}
           </Badge>
         )}
       </Group>

@@ -1,5 +1,11 @@
 import { Task } from '@/types';
 
+/**
+ * MOCK DATA FOR DEVELOPMENT ONLY
+ * This data should only be used during development or for testing.
+ * In production, all data should come from the actual API.
+ */
+
 // Create today's date for a reminder
 const today = new Date();
 // Create tomorrow's date for due date

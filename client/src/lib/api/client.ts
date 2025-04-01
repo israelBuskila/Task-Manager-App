@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { ApiResponse, LoginCredentials, RegisterCredentials, Task, CreateTaskInput, UpdateTaskInput, TaskFilters } from '@/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || '/api/http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 const apiClient = axios.create({
   baseURL: API_URL,
@@ -139,8 +139,31 @@ export const adminApi = {
     try {
       const response = await apiClient.get<ApiResponse<any[]>>('/admin/users');
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('Error in getUsers API call:', error);
+      return { success: false, error: error.message || 'Failed to fetch users' };
+    }
+  },
+
+  getUsersWithTaskCount: async (): Promise<ApiResponse<any[]>> => {
+    try {
+      console.log('Calling API endpoint: /admin/users/with-tasks');
+      const response = await apiClient.get<ApiResponse<any[]>>('/admin/users/with-tasks');
+      console.log('Raw API response:', response);
+      
+      // Ensure we have a properly formatted response
+      if (response && response.data) {
+        // If the API returns direct data array instead of { success, data } format
+        if (Array.isArray(response.data)) {
+          return { success: true, data: response.data };
+        }
+        return response.data;
+      }
+      
+      return { success: false, error: 'Invalid response format' };
+    } catch (error: any) {
+      console.error('Error in getUsersWithTaskCount API call:', error);
+      return { success: false, error: error.message || 'Failed to fetch users with task count' };
     }
   },
 
@@ -148,8 +171,9 @@ export const adminApi = {
     try {
       const response = await apiClient.get<ApiResponse<Task[]>>('/admin/tasks', { params: filters });
       return response.data;
-    } catch (error) {
-      throw error;
+    } catch (error: any) {
+      console.error('Error in getAllTasks API call:', error);
+      return { success: false, error: error.message || 'Failed to fetch tasks' };
     }
   },
 };

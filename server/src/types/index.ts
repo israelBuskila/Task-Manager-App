@@ -16,7 +16,10 @@ export interface TaskDocument extends Document {
   title: string;
   description?: string;
   status: 'To Do' | 'In Progress' | 'Completed' | 'Pending';
+  priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+  dueDate?: Date;
   reminderDate: Date;
+  assignedTo?: string;
   user: string | UserDocument;
   createdAt: Date;
   updatedAt: Date;
@@ -34,4 +37,14 @@ export interface RegisterCredentials {
   email: string;
   password: string;
   role?: 'user' | 'admin';
+}
+
+// Extend Express Request to include user property
+import { Request } from 'express';
+declare global {
+  namespace Express {
+    interface Request {
+      user?: UserDocument;
+    }
+  }
 }

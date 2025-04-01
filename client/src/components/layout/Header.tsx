@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Group, Title, ActionIcon, Button, Box, Badge, Menu, Text } from '@mantine/core';
 import { IconSun, IconMoon, IconBell, IconLogout, IconUser, IconDashboard, IconSettings } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
@@ -15,10 +16,16 @@ export function Header() {
   const pathname = usePathname();
   const [user] = useAtom(userAtom);
   const [, logout] = useAtom(logoutAtom);
+  const [mounted, setMounted] = useState(false);
+  
+  // Set mounted state to true on client-side
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   // Don't show header on auth pages
   const isAuthPage = pathname === '/login' || pathname === '/register';
-  if (isAuthPage) return null;
+  if (isAuthPage && !mounted) return null;
   
   const toggleColorScheme = () => {
     const newColorScheme = colorScheme === 'dark' ? 'light' : 'dark';
@@ -79,14 +86,14 @@ export function Header() {
               
               <Menu.Dropdown>
                 <Menu.Label>Navigation</Menu.Label>
-                <Link href="/(auth)/(dashboard)/user" style={{ textDecoration: 'none' }}>
+                <Link href="/userDashboard" style={{ textDecoration: 'none' }}>
                   <Menu.Item leftSection={<IconDashboard size={14} />}>
                     My Dashboard
                   </Menu.Item>
                 </Link>
                 
                 {isAdmin && (
-                  <Link href="/(auth)/(dashboard)/admin" style={{ textDecoration: 'none' }}>
+                  <Link href="/adminDashboard" style={{ textDecoration: 'none' }}>
                     <Menu.Item leftSection={<IconSettings size={14} />}>
                       Admin Dashboard
                     </Menu.Item>

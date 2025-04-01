@@ -16,11 +16,25 @@ const TaskSchema: Schema = new Schema({
     enum: ['To Do', 'In Progress', 'Completed', 'Pending'],
     default: 'To Do'
   },
+  priority: {
+    type: String,
+    enum: ['LOW', 'MEDIUM', 'HIGH'],
+    default: 'MEDIUM'
+  },
+  dueDate: {
+    type: Date,
+    default: () => new Date(+new Date() + 7*24*60*60*1000) // Default 1 week from now
+  },
   reminderDate: {
     type: Date,
     required: true
   },
   user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  assignedTo: {
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: true

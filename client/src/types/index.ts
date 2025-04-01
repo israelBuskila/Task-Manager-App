@@ -24,17 +24,30 @@ export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'COMPLETED' | 'PENDING';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface Task {
-  id: string;
+  id?: string;
+  _id?: string;  // MongoDB ID
   title: string;
   description: string;
   status: TaskStatus;
   priority: TaskPriority;
   dueDate: Date;
   reminderDate: Date;
-  userId: string;
-  assignedTo?: string;
+  userId?: string;
+  assignedTo?: string; // ID of the user this task is assigned to
   createdAt: Date;
   updatedAt: Date;
+  user?: {
+    _id?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  assignedUser?: {
+    _id?: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
 }
 
 export interface CreateTaskInput {
@@ -44,7 +57,6 @@ export interface CreateTaskInput {
   priority: TaskPriority;
   dueDate: Date;
   reminderDate: Date;
-  assignedTo?: string;
 }
 
 export interface UpdateTaskInput extends Partial<CreateTaskInput> {
@@ -57,18 +69,19 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
+  cached?: boolean;
 }
 
 // Filter types
 export interface TaskFilters {
   status?: TaskStatus[];
   priority?: TaskPriority[];
-  assignedTo?: string;
   dueDate?: {
     from: Date;
     to: Date;
   };
   search?: string;
+  users?: string[]; // Array of user IDs for filtering
 }
 
 // Pagination types

@@ -4,9 +4,9 @@ import '@mantine/core/styles.css';
 import '@mantine/notifications/styles.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
+import { ColorSchemeScript } from '@mantine/core';
 import AuthProvider from '@/components/layout/AuthProvider';
+import JotaiProvider from '@/components/layout/JotaiProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -23,15 +23,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <ColorSchemeScript />
+        <ColorSchemeScript defaultColorScheme="light" />
       </head>
       <body className={inter.className}>
-        <MantineProvider>
-          <Notifications position="top-right" />
+        <JotaiProvider>
           <AuthProvider>
             {children}
           </AuthProvider>
-        </MantineProvider>
+        </JotaiProvider>
       </body>
     </html>
   );

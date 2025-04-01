@@ -32,9 +32,9 @@ export default function LoginPage() {
     console.log('User:', user);
     if (user) {
       if (user.role === 'admin') {
-        router.push('/admin');
+        router.push('/adminDashboard');
       } else {
-        router.push('/user');
+        router.push('/userDashboard');
       }
     }
   }, [user, router]);
@@ -60,9 +60,9 @@ export default function LoginPage() {
       
       // Check user role and redirect accordingly
       if (userData?.role === 'admin') {
-        router.push('/admin');
+        router.push('/adminDashboard');
       } else {
-        router.push('/user');
+        router.push('/userDashboard');
       }
       
     } catch (err) {
