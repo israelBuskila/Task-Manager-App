@@ -241,7 +241,6 @@ export const updateTask = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
     
-    // Validate the task ID
     const taskId = req.params.id;
     if (!taskId || taskId === 'undefined') {
       return res.status(400).json({ message: 'Invalid task ID provided' });
@@ -255,15 +254,6 @@ export const updateTask = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Task not found' });
     }
     
-    // Check if user has permission to update this task
-    const isAdmin = req.user.role === 'admin';
-    const isCreator = task.user.toString() === req.user._id.toString();
-    const isAssigned = task.assignedTo ? task.assignedTo.toString() === req.user._id.toString() : false;
-    
-    if (!isAdmin && !isCreator && !isAssigned) {
-      return res.status(403).json({ message: 'Not authorized to update this task' });
-    }
-    
     // Update task fields
     if (title) task.title = title;
     if (description !== undefined) task.description = description;
@@ -272,14 +262,13 @@ export const updateTask = async (req: Request, res: Response) => {
     if (priority) (task as any).priority = priority;
     if (dueDate) (task as any).dueDate = new Date(dueDate);
     
-    // Only admin or creator can reassign tasks
-    if (assignedTo && (isAdmin || isCreator)) {
+    // Only admin can reassign tasks
+    if (assignedTo && req.user.role === 'admin') {
       task.assignedTo = assignedTo;
     }
     
     const updatedTask = await task.save();
     
-    // Map server status to client status for response
     const taskObj = updatedTask.toObject();
     const clientTask = {
       ...taskObj,
@@ -303,7 +292,6 @@ export const deleteTask = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
     
-    // Validate the task ID
     const taskId = req.params.id;
     if (!taskId || taskId === 'undefined') {
       return res.status(400).json({ message: 'Invalid task ID provided' });
@@ -315,13 +303,7 @@ export const deleteTask = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Task not found' });
     }
     
-    // Check if user has permission to delete this task
-    if (req.user.role !== 'admin' && task.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to delete this task' });
-    }
-    
     await task.deleteOne();
-    
     res.json({ message: 'Task removed' });
   } catch (error: any) {
     console.error('Delete task error:', error);
