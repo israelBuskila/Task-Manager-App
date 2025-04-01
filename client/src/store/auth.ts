@@ -92,12 +92,9 @@ export const registerAtom = atom(
         throw new Error(response.error || 'Registration failed');
       }
       
-      const { token, ...userData } = response.data;
-      
-      // Store token using token manager
-      tokenManager.setToken(token);
-      
-      set(userAtom, mapDbUserToUser(userData));
+      // Don't store token or set user - just return success
+      NotificationManager.showSuccess('Registration successful! Please log in.');
+      return true;
     } catch (error) {
       set(errorAtom, error instanceof Error ? error.message : 'Registration failed');
       throw error;

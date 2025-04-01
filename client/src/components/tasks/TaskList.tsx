@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Container, Title, Stack, Button, Group, Text, Badge, Loader, Center, Alert } from '@mantine/core';
 import { TaskCard } from './TaskCard';
 import { TaskFilters } from './TaskFilters';
-import { TaskFormModal } from './TaskFormModal';
+import { AnimatedTaskModal } from './AnimatedTaskModal';
 import { Task, TaskFilters as TaskFiltersType, CreateTaskInput, UpdateTaskInput } from '@/types';
 import { IconPlus, IconAlertCircle, IconRefresh } from '@tabler/icons-react';
 import { NotificationManager } from '@/lib/notification/notifications';
@@ -267,12 +267,14 @@ export function TaskList({ adminView = false }: TaskListProps) {
           )}
         </Stack>
         
-        <TaskFormModal
+        <AnimatedTaskModal
           opened={modalOpened}
-          onClose={() => setModalOpened(false)}
-          task={editingTask}
+          onClose={() => {
+            setModalOpened(false);
+            setEditingTask(undefined);
+          }}
           onSubmit={handleTaskSubmit}
-          adminMode={adminView}
+          initialData={editingTask}
         />
       </Stack>
     </Container>

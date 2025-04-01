@@ -35,13 +35,17 @@ export const register = async (req: Request, res: Response) => {
     });
     
     if (user) {
+      // Return success without token
       res.status(201).json({
-        _id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        token: generateToken(user._id)
+        success: true,
+        data: {
+          _id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role
+        },
+        message: 'Registration successful'
       });
     } else {
       res.status(400).json({ message: 'Invalid user data' });
