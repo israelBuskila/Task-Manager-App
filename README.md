@@ -1,14 +1,31 @@
 # Task Management Application
 
-A modern full-stack task management application built with Next.js, Express, and MongoDB. This application allows users to manage tasks with features like reminders, filtering, and role-based access control.
+A modern full-stack task management application built with Next.js, Express, and MongoDB. This application allows admins to assign and manage tasks, while users can manage their assigned tasks.
 
 ## Features
 
-- **User Authentication**: Secure login and registration with JWT
-- **Role-Based Access Control**: Admin and User roles with different permissions
-- **Task Management**: Create, read, update, and delete tasks
-- **Task Filtering**: Filter tasks by status, priority, due date, and search terms
-- **Reminder System**: Get notified about upcoming tasks
+- **User Authentication**: Secure login and registration with JWT and localStorage persistence
+- **Role-Based Access Control**: 
+  - **Admin**: 
+    - View all tasks in the system
+    - Create and assign tasks to users
+    - Manage task assignments
+  - **Users**: 
+    - View and manage tasks assigned to them
+- **Task Management**:
+  - Admins:
+    - Create tasks
+    - Assign tasks to users
+    - View and manage all tasks
+  - Users:
+    - View their assigned tasks
+    - Update task status and details
+    - Delete their assigned tasks
+- **Task Filtering**: 
+  - Filter by status
+  - Filter by priority
+  - Search functionality
+  - User filtering (admin only)
 - **Responsive UI**: Modern and mobile-friendly interface built with Mantine
 - **Real-time Updates**: Task changes reflect immediately in the UI
 
@@ -147,35 +164,49 @@ Open your browser and navigate to `http://localhost:3000`
 
 ## Testing the Application
 
-### Initial Setup
-- Register an admin user
-- Register a regular user
-- Create sample tasks for both users
+### Admin Workflow
+1. Log in as admin
+2. Create new tasks
+3. Assign tasks to specific users
+4. View all tasks in the system
+5. Filter tasks by user
+6. Manage task assignments
 
-### Testing User Roles
-1. **Admin Features**:
-   - View all tasks from all users
-   - Edit and delete any task
-   - Filter tasks by user
-   - Access to the admin dashboard
+### User Workflow
+1. Log in as regular user
+2. View tasks assigned by admin
+3. Update task status/priority
+4. Delete completed tasks
+5. Filter assigned tasks by status/priority
 
-2. **Regular User Features**:
-   - View only their own tasks
-   - Create, edit, and delete only their tasks
-   - Filter tasks by status, priority, and due date
+## User Roles and Permissions
+
+### Admin
+- Create new tasks
+- Assign tasks to any user
+- View all tasks in the system
+- Update any task's details
+- Delete any task
+- Filter tasks by user
+- Access admin dashboard
+
+### Regular User
+- View tasks assigned to them by admin
+- Update their assigned tasks (status, priority, details)
+- Delete their assigned tasks
+- Filter their tasks by status and priority
+- Search within their assigned tasks
 
 ## API Endpoints
 
 ### Authentication
-- `POST /api/login` - User login
-- `POST /api/register` - User registration
-- `GET /api/profile` - Get user profile
-- `GET /api/users` - Get all users (admin only)
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Get current user profile
 
 ### Tasks
-- `GET /api/tasks` - Get all tasks (filtered by role)
-- `POST /api/tasks` - Create a task
-- `GET /api/tasks/:id` - Get a specific task
+- `GET /api/tasks` - Get tasks (all for admin, assigned only for users)
+- `POST /api/tasks` - Create and assign a task (admin only)
 - `PUT /api/tasks/:id` - Update a task
 - `DELETE /api/tasks/:id` - Delete a task
 
@@ -220,3 +251,15 @@ This project is licensed under the MIT License.
 - [MongoDB](https://www.mongodb.com/) - General purpose, document-based, distributed database
 - [Mantine](https://mantine.dev/) - React components library
 - [Jotai](https://jotai.org/) - Primitive and flexible state management for React 
+
+## Task Assignment Flow
+
+1. **Admin Creates Task**:
+   - Admin creates a new task
+   - Specifies task details (title, description, etc.)
+   - Assigns the task to a specific user
+
+2. **User Manages Assigned Tasks**:
+   - User sees tasks assigned to them
+   - Can update task status/priority
+   - Can delete tasks when completed 
