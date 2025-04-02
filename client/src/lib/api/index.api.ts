@@ -3,7 +3,7 @@ import { tokenManager } from '@/lib/auth/token';
 
 // Create axios instance with base configuration
 export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'https://task-manager-app-n4fg.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },
