@@ -2,6 +2,11 @@
 
 A full-stack task management application built as part of a technical interview assignment. The application demonstrates modern web development practices using Next.js, Express, and MongoDB.
 
+## Live Application
+The application is currently deployed and accessible at:
+- Frontend: [https://task-manager-app-hazel-nine.vercel.app](https://task-manager-app-hazel-nine.vercel.app)
+- Database: MongoDB Atlas
+
 ## Features
 
 ### Authentication & Authorization
