@@ -14,16 +14,30 @@ For testing purposes, you can use the following admin account:
 - Password: admin1
 
 ## Screenshots
-Here are some screenshots of the application:
+Here are some screenshots showcasing the application's interface and features:
 
 ### Login Page
+The clean and modern login interface with email and password fields, featuring a "Create account" option for new users.
 ![Login Page](client/screenshots/loginPage.png)
 
 ### Admin Dashboard
-![Admin Dashboard](client/screenshots/dadboardAdminPage.png)
+The main admin dashboard showing task management interface with task list, filters, and task creation options.
+![Admin Dashboard](client/screenshots/dasboardAdminPanel.png)
 
 ### Admin Menu
+The admin navigation menu with options for my Dasboard and admin Dashboard.
 ![Admin Menu](client/screenshots/dasboardAdminMenu.png)
+
+### Task Card in Admin Dashboard
+Detailed view of a task card showing task information, status, priority, and management options.
+![Task Card](client/screenshots/taskCardAdminDasboard.png)
+
+### Admin Statistics Panel
+s](client/screenshots/dashboardadminStatistics.png)
+
+### Theme Toggle
+The application's dark/light theme toggle feature for personalized user experience.
+![Theme Toggle](client/screenshots/toggleCloorTheme.png)
 
 ## Features
 
