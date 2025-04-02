@@ -13,6 +13,18 @@ For testing purposes, you can use the following admin account:
 - Email: admin1@gmail.com
 - Password: admin1
 
+## Screenshots
+Here are some screenshots of the application:
+
+### Login Page
+![Login Page](client/screenshots/loginPage.png)
+
+### Admin Dashboard
+![Admin Dashboard](client/screenshots/dadboardAdminPage.png)
+
+### Admin Menu
+![Admin Menu](client/screenshots/dasboardAdminMenu.png)
+
 ## Features
 
 ### Authentication & Authorization
