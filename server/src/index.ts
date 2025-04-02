@@ -22,7 +22,8 @@ app.use(express.json());
 app.use(cors({
   origin: [
     'http://localhost:3001',
-    'https://task-manager-app-hazel-nine.vercel.app'
+    'https://task-manager-app-hazel-nine.vercel.app',
+    'https://task-manager-app-n4fg.onrender.com'
   ],
   credentials: true,              // Allow credentials (cookies)
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
