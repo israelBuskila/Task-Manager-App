@@ -12,7 +12,7 @@ const REMINDER_INTERVALS = {
 };
 
 // Helper to get reminder message based on hours until reminder
-const getReminderMessage = (hoursUntil: number, task: Task): string => {
+const getReminderMessage = (hoursUntil: number): string => {
     if (hoursUntil <= REMINDER_INTERVALS.URGENT) {
         return `URGENT: Task reminder is in less than an hour!`;
     } else if (hoursUntil <= REMINDER_INTERVALS.SOON) {
@@ -48,21 +48,21 @@ export const checkReminders = (tasks: Task[]) => {
         if (hoursUntilReminder <= REMINDER_INTERVALS.URGENT && !shownReminders.has(urgentKey)) {
             NotificationManager.showTaskReminder(
                 { ...task, title: "🚨 " + task.title }, // Add urgency indicator
-                getReminderMessage(hoursUntilReminder, task)
+                getReminderMessage(hoursUntilReminder)
             );
             shownReminders.add(urgentKey);
         } 
         else if (hoursUntilReminder <= REMINDER_INTERVALS.SOON && !shownReminders.has(soonKey)) {
             NotificationManager.showTaskReminder(
                 task,
-                getReminderMessage(hoursUntilReminder, task)
+                getReminderMessage(hoursUntilReminder)
             );
             shownReminders.add(soonKey);
         }
         else if (hoursUntilReminder <= REMINDER_INTERVALS.UPCOMING && !shownReminders.has(upcomingKey)) {
             NotificationManager.showTaskReminder(
                 task,
-                getReminderMessage(hoursUntilReminder, task)
+                getReminderMessage(hoursUntilReminder)
             );
             shownReminders.add(upcomingKey);
         }

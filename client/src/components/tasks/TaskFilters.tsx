@@ -2,7 +2,6 @@
 
 import {
   Group,
-  Select,
   TextInput,
   Button,
   Stack,
@@ -16,9 +15,7 @@ import { useEffect, useState } from 'react';
 import type { TaskStatus, TaskPriority, TaskFilters as TaskFiltersType } from '@/types';
 import { adminApi } from '@/lib/api/admin.api';
 import { 
-  IconCircleCheck, 
   IconClockHour3, 
-  IconSquareRoundedCheck, 
   IconClock,
   IconSquare,
   IconSquareCheck,
@@ -107,7 +104,7 @@ export function TaskFilters({ filters, onFilterChange, adminMode = false }: Task
     fetchUsers();
   }, [adminMode]);
 
-  const handleFilterChange = (key: keyof TaskFiltersType, value: any) => {
+  const handleFilterChange = (key: keyof TaskFiltersType, value: TaskFiltersType[keyof TaskFiltersType]) => {
     onFilterChange({
       ...filters,
       [key]: value,

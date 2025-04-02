@@ -1,21 +1,25 @@
-import axios from 'axios';
-import { ApiResponse, Task, TaskFilters } from '@/types';
+import { ApiResponse, Task, TaskFilters, User } from '@/types';
 import { api } from './index.api';
 
+interface UserWithId extends User {
+  _id: string;
+  tasksCount?: number;
+}
+
 export const adminApi = {
-  getUsers: async (): Promise<ApiResponse<any[]>> => {
+  getUsers: async (): Promise<ApiResponse<User[]>> => {
     try {
-      const response = await api.get<ApiResponse<any[]>>('/admin/users');
+      const response = await api.get<ApiResponse<User[]>>('/admin/users');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in getUsers API call:', error);
-      return { success: false, error: error.message || 'Failed to fetch users' };
+      return { success: false, error:'Failed to fetch users' };
     }
   },
 
-  getUsersWithTaskCount: async (): Promise<ApiResponse<any[]>> => {
+  getUsersWithTaskCount: async (): Promise<ApiResponse<UserWithId[]>> => {
     try {
-      const response = await api.get<ApiResponse<any[]>>('/admin/users/with-tasks');
+      const response = await api.get<ApiResponse<UserWithId[]>>('/admin/users/with-tasks');
       console.log('Raw API response:', response);
       
       // Ensure we have a properly formatted response
@@ -28,9 +32,9 @@ export const adminApi = {
       }
       
       return { success: false, error: 'Invalid response format' };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in getUsersWithTaskCount API call:', error);
-      return { success: false, error: error.message || 'Failed to fetch users with task count' };
+      return { success: false, error: 'Failed to fetch users with task count' };
     }
   },
 
@@ -63,7 +67,7 @@ export const adminApi = {
       );
       
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in getAllTasks API call:', error);
       // Don't wrap the error, let it propagate
       throw error;

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   TextInput,
   PasswordInput,
@@ -11,7 +11,6 @@ import {
   Text,
   Stack,
   Alert,
-  Notification,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconAlertCircle } from '@tabler/icons-react';
@@ -19,7 +18,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAtom } from 'jotai';
 import { LoginCredentials } from '@/types';
-import { loginAtom, errorAtom, isLoadingAtom, userAtom } from '@/store/auth';
+import { loginAtom, errorAtom, isLoadingAtom } from '@/store/auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -61,7 +60,7 @@ export default function LoginPage() {
         Welcome back!
       </Title>
       <Text c="dimmed" size="sm" ta="center" mt={5}>
-        Don't have an account yet?{' '}
+        Don&apos;t have an account yet?{' '}
         <Link href="/register" style={{ color: 'var(--mantine-color-blue-filled)' }}>
           Create account
         </Link>

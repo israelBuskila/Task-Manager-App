@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import {
   TextInput,
   PasswordInput,
@@ -44,15 +43,9 @@ export default function RegisterPage() {
   });
 
   const handleSubmit = async (values: RegisterCredentials) => {
-    try {
       await register(values);
-      
-      // For demo purposes, just show success notification and redirect
       NotificationManager.showSuccess('Registration successful! You can now login.');
       router.push('/login');
-    } catch (err) {
-      // Error is handled by the atom
-    }
   };
 
   return (

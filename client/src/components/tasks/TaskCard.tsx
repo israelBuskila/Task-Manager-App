@@ -2,10 +2,8 @@
 
 import { Card, Text, Group, Badge, ActionIcon, Menu } from '@mantine/core';
 import { IconDotsVertical, IconEdit, IconTrash } from '@tabler/icons-react';
-import { Task, TaskStatus, TaskPriority } from '@/types';
+import { Task, TaskStatus, TaskPriority, User } from '@/types';
 import dayjs from 'dayjs';
-import { useAtom } from 'jotai';
-import { userAtom } from '@/store/auth';
 
 const statusColors: Record<TaskStatus, string> = {
   TODO: 'blue',
@@ -24,20 +22,17 @@ interface TaskCardProps {
   task: Task;
   onEdit: (task: Task) => void;
   onDelete: (taskId: string) => void;
-  onStatusChange: (taskId: string, status: TaskStatus) => void;
   showUser?: boolean;
 }
 
-export function TaskCard({ task, onEdit, onDelete, onStatusChange, showUser = false }: TaskCardProps) {
+export function TaskCard({ task, onEdit, onDelete, showUser = false }: TaskCardProps) {
   const isOverdue = dayjs(task.dueDate).isBefore(dayjs(), 'day');
-  const [currentUser] = useAtom(userAtom);
-  const isAdmin = currentUser?.role === 'admin';
   
   // Get task ID from either id or _id field
   const taskId = task.id || task._id;
 
   // Helper function to format user name
-  const formatUserName = (user: any) => {
+  const formatUserName = (user: User | { firstName: string; lastName: string; email: string } | string | null) => {
     if (!user) return 'Unassigned';
     if (typeof user === 'string') return 'Loading...';
     return user.firstName && user.lastName 

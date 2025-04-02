@@ -59,11 +59,12 @@ export const fetchTasksAtom = atom(
         
         set(tasksAtom, tasks);
         return tasks;
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Error in task fetch:', error);
-        if (error.response) {
-          console.error('Response error:', error.response.data);
-          throw new Error(error.response.data?.message || error.response.data || error.message);
+        if (error && typeof error === 'object' && 'response' in error) {
+          const apiError = error as { response: { data?: { message?: string } } };
+          console.error('Response error:', apiError.response.data);
+          throw new Error(apiError.response.data?.message || 'Failed to fetch tasks');
         }
         throw error;
       }
@@ -93,7 +94,7 @@ export const createTaskAtom = atom(
       const { userId, assignedTo, ...taskCreateData } = taskData;
       
       // Prepare data to send to API
-      const dataToSend: any = { ...taskCreateData };
+      const dataToSend: CreateTaskInput & { userId?: string; assignedTo?: string } = { ...taskCreateData };
       
       // Add userId if specified (admin creating task for another user)
       if (userId) {

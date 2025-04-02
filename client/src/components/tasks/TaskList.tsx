@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Container, Title, Stack, Button, Group, Text, Badge, Loader, Center, Alert, SimpleGrid } from '@mantine/core';
 import { TaskCard } from './TaskCard';
 import { TaskFilters } from './TaskFilters';
@@ -21,8 +21,6 @@ interface TaskListProps {
 
 export function TaskList({ 
   adminView = false,
-  showFilters = true,
-  showAddTask = true 
 }: TaskListProps) {
   // Global state from Jotai
   const [tasks] = useAtom(tasksAtom);
@@ -66,9 +64,7 @@ export function TaskList({
     try {
       setIsRefreshing(true);
       await fetchTasks();
-    } catch (error) {
-      // Error handling is done in the atom
-    } finally {
+    }  finally {
       setIsRefreshing(false);
     }
   }, [fetchTasks]);
@@ -95,21 +91,6 @@ export function TaskList({
       setIsRefreshing(false);
     }
   }, [fetchTasks]);
-
-  // Handle task status changes
-  const handleStatusChange = useCallback(async (taskId: string, newStatus: Task['status']) => {
-    if (!taskId) {
-      NotificationManager.showError('Cannot update task: Missing task ID');
-      return;
-    }
-    
-    try {
-      await updateTask({ id: taskId, status: newStatus });
-      NotificationManager.showTaskStatusChanged({ id: taskId, status: newStatus } as Task);
-    } catch (error) {
-      NotificationManager.showError('Failed to update task status');
-    }
-  }, [updateTask]);
 
   // Handle task deletion
   const handleTaskDelete = useCallback(async (taskId: string) => {
@@ -182,7 +163,7 @@ export function TaskList({
       
       setModalOpened(false);
       setEditingTask(undefined);
-    } catch (error) {
+    } catch {
       NotificationManager.showError('Failed to save task');
     }
   }, [adminView, createTask, updateTask, user]);
@@ -265,7 +246,6 @@ export function TaskList({
                   task={task}
                   onEdit={handleTaskEdit}
                   onDelete={handleTaskDelete}
-                  onStatusChange={handleStatusChange}
                   showUser={adminView}
                 />
               ))}

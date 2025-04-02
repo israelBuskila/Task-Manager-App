@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { 
   Container, 
   Title, 
-  Grid, 
   Paper, 
   Text, 
   Stack, 
@@ -26,9 +25,7 @@ import {
   IconCheckbox, 
   IconAlertCircle, 
   IconClock,
-  IconCalendarStats,
   IconTrash,
-  IconUserPlus,
   IconFileAnalytics
 } from '@tabler/icons-react';
 import { TaskList } from '@/components/tasks/TaskList';
@@ -57,7 +54,7 @@ export default function AdminDashboard() {
   // Use state for users but initialize with mock data
   const [users, setUsers] = useState<UserWithTaskCount[]>([]);
   const [isUsersLoading, setIsUsersLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   
   // Task statistics
   const totalTasks = tasks.length;

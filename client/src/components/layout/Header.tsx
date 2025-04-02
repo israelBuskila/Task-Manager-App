@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Group, Title, ActionIcon, Button, Box, Badge, Menu, Text } from '@mantine/core';
+import { Group, Title, ActionIcon, Button, Box, Badge, Menu } from '@mantine/core';
 import { IconSun, IconMoon, IconBell, IconLogout, IconUser, IconDashboard, IconSettings } from '@tabler/icons-react';
 import { useMantineColorScheme } from '@mantine/core';
 import { useRouter, usePathname } from 'next/navigation';

@@ -1,6 +1,6 @@
-import { atom } from 'jotai';
+import { atom, Getter } from 'jotai';
 import { User, LoginCredentials, RegisterCredentials } from '@/types';
-import { authApi } from '@/lib/api/auth.api';
+import { authApi, AuthResponse } from '@/lib/api/auth.api';
 import { tokenManager } from '@/lib/auth/token';
 import { NotificationManager } from '@/lib/notification/notifications';
 import { checkReminders } from '@/lib/notification/utils';
@@ -12,18 +12,20 @@ export const isLoadingAtom = atom(false);
 export const errorAtom = atom<string | null>(null);
 
 // Helper function to map database user to frontend user type
-const mapDbUserToUser = (dbUser: any): User => ({
+const mapDbUserToUser = (dbUser: AuthResponse): User => ({
   id: dbUser._id,
   firstName: dbUser.firstName,
   lastName: dbUser.lastName,
   email: dbUser.email,
-  role: dbUser.role
+  role: dbUser.role as 'admin' | 'user'
 });
 
 // Helper function to check reminders after loading tasks
-const checkUserReminders = async (get: any, set: any) => {
+const checkUserReminders = async (get: Getter) => {
   try {
-    const fetchTasks = get(fetchTasksAtom)[1];
+    const atomValue = get(fetchTasksAtom);
+    if (!atomValue) return;
+    const fetchTasks = atomValue[1] as () => Promise<void>;
     await fetchTasks();
     const tasks = get(tasksAtom);
     if (tasks.length > 0) {
@@ -63,7 +65,7 @@ export const loginAtom = atom(
       set(userAtom, user);
       
       // Check reminders after login
-      await checkUserReminders(get, set);
+      await checkUserReminders(get);
       
       // Return the mapped user data
       return user;
@@ -127,13 +129,13 @@ export const loadUserAtom = atom(
         return;
       }
       
-      const { token, ...userData } = response.data;
+      const { ...userData } = response.data;
       const user = mapDbUserToUser(userData);
       console.log('Setting user data:', user);
       set(userAtom, user);
       
       // Check reminders after loading user
-      await checkUserReminders(get, set);
+      await checkUserReminders(get);
     } catch (error) {
       console.error('Failed to load user:', error);
       tokenManager.removeToken();

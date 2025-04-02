@@ -1,14 +1,14 @@
-import { LoginCredentials, ApiResponse, RegisterCredentials, User } from "@/types";
+import { LoginCredentials, ApiResponse, RegisterCredentials } from "@/types";
 import { api } from "./index.api";
 
 // Define the response type from the database
-interface AuthResponse {
+export interface AuthResponse {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
   role: string;
-  token: string;
+  token?: string;
 }
 
 export const authApi = {
