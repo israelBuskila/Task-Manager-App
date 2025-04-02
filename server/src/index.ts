@@ -23,6 +23,7 @@ app.use(cors({
   origin: [
     'http://localhost:3001',
     'https://task-manager-app-hazel-nine.vercel.app',
+    'https://task-manager-9151blx57-israels-projects-e59116a2.vercel.app',
     'https://task-manager-app-n4fg.onrender.com'
   ],
   credentials: true,              // Allow credentials (cookies)
@@ -32,9 +33,9 @@ app.use(cors({
 app.use(morgan('dev'));
 
 // Routes
-app.use('/auth', authRoutes);
-app.use('/tasks', taskRoutes);
-app.use('/admin', adminRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Welcome to Task Management API' });
