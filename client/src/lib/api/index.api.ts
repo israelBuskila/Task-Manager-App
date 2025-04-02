@@ -3,7 +3,7 @@ import { tokenManager } from '@/lib/auth/token';
 
 // Create axios instance with base configuration
 export const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },
