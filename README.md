@@ -5,7 +5,13 @@ A full-stack task management application built as part of a technical interview 
 ## Live Application
 The application is currently deployed and accessible at:
 - Frontend: [https://task-manager-app-hazel-nine.vercel.app](https://task-manager-app-hazel-nine.vercel.app)
+- Backend: Hosted on Render
 - Database: MongoDB Atlas
+
+### Test Account
+For testing purposes, you can use the following admin account:
+- Email: admin1@gmail.com
+- Password: admin1
 
 ## Features
 
@@ -48,19 +54,21 @@ The application is currently deployed and accessible at:
 - Jotai for state management
 - TypeScript for type safety
 - Responsive design with modern UI/UX
+- Deployed on Vercel
 
 ### Backend
 - Express with TypeScript
-- MongoDB for data persistence
+- MongoDB Atlas for data persistence
 - JWT Authentication
 - RESTful API architecture
 - Error handling and validation
+- Deployed on Render
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js (>= 16.x)
-- MongoDB
+- MongoDB Atlas account
 - npm or yarn
 
 ### Installation
@@ -77,14 +85,14 @@ npm run install-all
 Server (.env):
 ```
 PORT=5000
-MONGODB_URI=mongodb://localhost:27017/task-management
+MONGODB_URI=your_mongodb_atlas_uri
 JWT_SECRET=your_jwt_secret_key
 JWT_EXPIRES_IN=7d
 ```
 
 Client (.env.local):
 ```
-NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_API_URL=http://localhost:5000/api  # For local development
 ```
 
 3. **Start Development**
@@ -174,6 +182,8 @@ MIT License
 
 - [Next.js](https://nextjs.org/) - The React Framework
 - [Express](https://expressjs.com/) - Fast, unopinionated, minimalist web framework for Node.js
-- [MongoDB](https://www.mongodb.com/) - General purpose, document-based, distributed database
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) - Cloud database service
 - [Mantine](https://mantine.dev/) - React components library
-- [Jotai](https://jotai.org/) - Primitive and flexible state management for React 
+- [Jotai](https://jotai.org/) - Primitive and flexible state management for React
+- [Vercel](https://vercel.com/) - Frontend deployment platform
+- [Render](https://render.com/) - Backend deployment platform 
