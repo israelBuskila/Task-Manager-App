@@ -8,6 +8,8 @@ The application is currently deployed and accessible at:
 - Backend: Hosted on Render
 - Database: MongoDB Atlas
 
+> **Note**: The backend server may experience a cold start delay of up to 50 seconds after periods of inactivity. This is normal behavior for the free tier of Render. Please be patient when making the first request after a period of inactivity.
+
 ### Test Account
 For testing purposes, you can use the following admin account:
 - Email: admin1@gmail.com
