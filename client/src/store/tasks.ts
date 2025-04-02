@@ -276,6 +276,15 @@ export const filteredTasksAtom = atom((get) => {
     );
   }
   
+  // Apply user filter
+  const userFilters = filters?.users;
+  if (userFilters && userFilters.length > 0) {
+    filteredTasks = filteredTasks.filter(task => {
+      const taskUserId = task.assignedUser?._id || task.assignedTo;
+      return taskUserId && userFilters.includes(taskUserId);
+    });
+  }
+  
   // Apply search filter
   const searchTerm = filters?.search?.trim();
   if (searchTerm) {
